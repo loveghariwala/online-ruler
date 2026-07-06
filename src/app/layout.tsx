@@ -12,7 +12,7 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
 const siteName = process.env.NEXT_PUBLIC_SITE_NAME || "Real Online Ruler";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
+  metadataBase: siteUrl ? new URL(siteUrl) : undefined,
   title: `Online Ruler — Free Accurate Ruler in cm, mm & Inches | ${siteName}`,
   description:
     "Free online ruler to measure in inches, cm, and mm at actual size. Calibrate for your screen, add guide lines, and measure real-world sizes — no download needed.",
