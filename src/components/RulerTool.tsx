@@ -2134,8 +2134,6 @@ export default function RulerTool() {
               <div
                 className="flex flex-col flex-1"
                 style={{
-                  minWidth: `${workspaceSize.w + RULER_THICKNESS}px`,
-                  minHeight: `${workspaceSize.h + RULER_THICKNESS}px`,
                   width: "100%",
                   height: "100%"
                 }}
@@ -2385,8 +2383,6 @@ export default function RulerTool() {
           <div
             className="flex flex-col flex-1"
             style={{
-              minWidth: `${workspaceSize.w + RULER_THICKNESS * 2}px`,
-              minHeight: `${workspaceSize.h + RULER_THICKNESS * 2}px`,
               width: "100%",
               height: "100%"
             }}
