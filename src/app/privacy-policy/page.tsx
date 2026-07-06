@@ -1,10 +1,16 @@
 import React from "react";
 import Link from "next/link";
+import type { Metadata } from "next";
 import { Ruler, ShieldAlert, ChevronLeft } from "lucide-react";
 
-export const metadata = {
-  title: "Privacy Policy | RealOnlineRuler",
-  description: "Read the privacy policy of RealOnlineRuler. Learn how we guarantee complete 100% client-side data privacy.",
+const siteName = process.env.NEXT_PUBLIC_SITE_NAME || "Real Online Ruler";
+
+export const metadata: Metadata = {
+  title: `Privacy Policy | ${siteName}`,
+  description: "Read the privacy policy of Real Online Ruler. 100% client-side processing — no tracking, no uploads, no data collection.",
+  alternates: {
+    canonical: "/privacy-policy",
+  },
 };
 
 export default function PrivacyPolicyPage() {

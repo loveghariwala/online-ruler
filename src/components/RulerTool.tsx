@@ -213,25 +213,22 @@ function CalibratorModal({
         <div className="flex border-b border-border/20 mb-4 shrink-0">
           <button
             onClick={() => setActiveTab("object")}
-            className={`flex-1 pb-2 text-center text-xs font-semibold border-b-2 transition-all cursor-pointer ${
-              activeTab === "object" ? "border-accent text-accent" : "border-transparent text-muted hover:text-foreground"
-            }`}
+            className={`flex-1 pb-2 text-center text-xs font-semibold border-b-2 transition-all cursor-pointer ${activeTab === "object" ? "border-accent text-accent" : "border-transparent text-muted hover:text-foreground"
+              }`}
           >
             💳 Real Object
           </button>
           <button
             onClick={() => setActiveTab("presets")}
-            className={`flex-1 pb-2 text-center text-xs font-semibold border-b-2 transition-all cursor-pointer ${
-              activeTab === "presets" ? "border-accent text-accent" : "border-transparent text-muted hover:text-foreground"
-            }`}
+            className={`flex-1 pb-2 text-center text-xs font-semibold border-b-2 transition-all cursor-pointer ${activeTab === "presets" ? "border-accent text-accent" : "border-transparent text-muted hover:text-foreground"
+              }`}
           >
             💻 Device Presets
           </button>
           <button
             onClick={() => setActiveTab("diagonal")}
-            className={`flex-1 pb-2 text-center text-xs font-semibold border-b-2 transition-all cursor-pointer ${
-              activeTab === "diagonal" ? "border-accent text-accent" : "border-transparent text-muted hover:text-foreground"
-            }`}
+            className={`flex-1 pb-2 text-center text-xs font-semibold border-b-2 transition-all cursor-pointer ${activeTab === "diagonal" ? "border-accent text-accent" : "border-transparent text-muted hover:text-foreground"
+              }`}
           >
             📐 Screen Size
           </button>
@@ -252,11 +249,10 @@ function CalibratorModal({
                   <button
                     key={obj.id}
                     onClick={() => setSelectedObj(obj)}
-                    className={`btn-glass rounded-lg px-3 py-2.5 text-left text-xs transition-all ${
-                      selectedObj.id === obj.id
-                        ? "border-accent bg-accent/10 text-accent font-semibold"
-                        : "border-border-light bg-surface/50 text-muted hover:text-foreground"
-                    } border cursor-pointer`}
+                    className={`btn-glass rounded-lg px-3 py-2.5 text-left text-xs transition-all ${selectedObj.id === obj.id
+                      ? "border-accent bg-accent/10 text-accent font-semibold"
+                      : "border-border-light bg-surface/50 text-muted hover:text-foreground"
+                      } border cursor-pointer`}
                   >
                     <span className="text-base mr-1">{obj.emoji}</span>
                     <span className="font-medium">{obj.name}</span>
@@ -333,11 +329,10 @@ function CalibratorModal({
                   <button
                     key={cat}
                     onClick={() => setPresetCategory(cat)}
-                    className={`px-2.5 py-1 text-[10px] sm:text-xs font-semibold rounded-md border transition-all cursor-pointer ${
-                      presetCategory === cat
-                        ? "border-accent bg-accent/15 text-accent"
-                        : "border-border-light text-muted hover:text-foreground"
-                    }`}
+                    className={`px-2.5 py-1 text-[10px] sm:text-xs font-semibold rounded-md border transition-all cursor-pointer ${presetCategory === cat
+                      ? "border-accent bg-accent/15 text-accent"
+                      : "border-border-light text-muted hover:text-foreground"
+                      }`}
                   >
                     {cat}
                   </button>
@@ -352,9 +347,8 @@ function CalibratorModal({
                     onClick={() => {
                       onPpiChange(dev.ppi);
                     }}
-                    className={`w-full px-4 py-3 text-left flex justify-between items-center hover:bg-white/[0.03] transition-colors cursor-pointer text-xs ${
-                      Math.abs(ppi - dev.ppi) < 0.1 ? "text-accent font-semibold bg-accent/5" : "text-foreground"
-                    }`}
+                    className={`w-full px-4 py-3 text-left flex justify-between items-center hover:bg-white/[0.03] transition-colors cursor-pointer text-xs ${Math.abs(ppi - dev.ppi) < 0.1 ? "text-accent font-semibold bg-accent/5" : "text-foreground"
+                      }`}
                   >
                     <div>
                       <div className="font-medium">{dev.name}</div>
@@ -433,7 +427,7 @@ function CalibratorModal({
                   onClick={applyDiagonalPpi}
                   className="w-full py-2.5 rounded-xl border border-accent/20 bg-accent/10 hover:bg-accent/15 text-accent font-semibold text-xs transition-all cursor-pointer"
                 >
-                  Calculate & Apply ({(Math.round((Math.sqrt(parseFloat(resW || "0")**2 + parseFloat(resH || "0")**2) / (parseFloat(diagonalInches) || 1)) * 100) / 100) || 0} PPI)
+                  Calculate & Apply ({(Math.round((Math.sqrt(parseFloat(resW || "0") ** 2 + parseFloat(resH || "0") ** 2) / (parseFloat(diagonalInches) || 1)) * 100) / 100) || 0} PPI)
                 </button>
               </div>
             </>
@@ -488,19 +482,19 @@ function MeasurementDisplay({
     activeUnit === "cm"
       ? cmValW.toFixed(2)
       : activeUnit === "mm"
-      ? mmValW.toFixed(1)
-      : activeUnit === "px"
-      ? Math.round(distancePx).toString()
-      : inValW.toFixed(3);
+        ? mmValW.toFixed(1)
+        : activeUnit === "px"
+          ? Math.round(distancePx).toString()
+          : inValW.toFixed(3);
 
   const primaryValueH = isBox
     ? activeUnit === "cm"
       ? cmValH.toFixed(2)
       : activeUnit === "mm"
-      ? mmValH.toFixed(1)
-      : activeUnit === "px"
-      ? Math.round(heightPx!).toString()
-      : inValH.toFixed(3)
+        ? mmValH.toFixed(1)
+        : activeUnit === "px"
+          ? Math.round(heightPx!).toString()
+          : inValH.toFixed(3)
     : "";
 
   const handleCopy = () => {
@@ -804,11 +798,10 @@ function FAQSection() {
               id={`faq-answer-${i}`}
               role="region"
               aria-labelledby={`faq-question-${i}`}
-              className={`transition-all duration-300 ease-in-out ${
-                openIndex === i
-                  ? "max-h-96 opacity-100"
-                  : "max-h-0 opacity-0 overflow-hidden"
-              }`}
+              className={`transition-all duration-300 ease-in-out ${openIndex === i
+                ? "max-h-96 opacity-100"
+                : "max-h-0 opacity-0 overflow-hidden"
+                }`}
             >
               <p className="px-4 pb-4 text-sm text-muted-light leading-relaxed">
                 {item.a}
@@ -1441,8 +1434,8 @@ export default function RulerTool() {
             ? e.touches[0].clientX
             : e.touches[0].clientY
           : isHorizontal
-          ? e.clientX
-          : e.clientY;
+            ? e.clientX
+            : e.clientY;
       return clientPos - (isHorizontal ? rect.left : rect.top);
     },
     [isHorizontal]
@@ -1500,8 +1493,8 @@ export default function RulerTool() {
             ? e.touches[0].clientX
             : e.touches[0].clientY
           : isHorizontalDrag
-          ? e.clientX
-          : e.clientY;
+            ? e.clientX
+            : e.clientY;
       return clientPos - (isHorizontalDrag ? rect.left : rect.top);
     },
     []
@@ -1724,17 +1717,17 @@ export default function RulerTool() {
           style={
             isHorizontal
               ? {
-                  left: `${Math.min(cursorA, cursorB)}px`,
-                  top: 0,
-                  width: `${distancePx}px`,
-                  height: "100%",
-                }
+                left: `${Math.min(cursorA, cursorB)}px`,
+                top: 0,
+                width: `${distancePx}px`,
+                height: "100%",
+              }
               : {
-                  left: 0,
-                  top: `${Math.min(cursorA, cursorB)}px`,
-                  width: "100%",
-                  height: `${distancePx}px`,
-                }
+                left: 0,
+                top: `${Math.min(cursorA, cursorB)}px`,
+                width: "100%",
+                height: `${distancePx}px`,
+              }
           }
         />
 
@@ -1805,15 +1798,15 @@ export default function RulerTool() {
           style={
             isHorizontal
               ? {
-                  left: `${Math.min(cursorA, cursorB) + distancePx / 2}px`,
-                  top: "50%",
-                  transform: "translate(-50%, -50%)",
-                }
+                left: `${Math.min(cursorA, cursorB) + distancePx / 2}px`,
+                top: "50%",
+                transform: "translate(-50%, -50%)",
+              }
               : {
-                  top: `${Math.min(cursorA, cursorB) + distancePx / 2}px`,
-                  left: "50%",
-                  transform: "translate(-50%, -50%)",
-                }
+                top: `${Math.min(cursorA, cursorB) + distancePx / 2}px`,
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+              }
           }
         >
           <div className="glass rounded-lg px-3 py-1.5 text-center">
@@ -1849,6 +1842,7 @@ export default function RulerTool() {
     <div className="flex items-center gap-2 flex-wrap">
       {/* Mode Selector */}
       <div className="relative">
+        <label htmlFor="measurement-mode" className="sr-only">Measurement Mode</label>
         <select
           id="measurement-mode"
           value={measurementMode}
@@ -1868,11 +1862,10 @@ export default function RulerTool() {
       <button
         id="calibrate-btn"
         onClick={() => setShowCalibrator(true)}
-        className={`btn-glass border rounded-lg px-3 py-2 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
-          isCalibrated
-            ? "border-accent-green/30 text-accent-green bg-accent-green/10"
-            : "border-accent/50 text-accent bg-accent/10 animate-pulse-glow"
-        }`}
+        className={`btn-glass border rounded-lg px-3 py-2 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${isCalibrated
+          ? "border-accent-green/30 text-accent-green bg-accent-green/10"
+          : "border-accent/50 text-accent bg-accent/10 animate-pulse-glow"
+          }`}
       >
         <Settings2 className="w-3.5 h-3.5" />
         {isCalibrated ? "Calibrated" : "Calibrate"}
@@ -1903,11 +1896,10 @@ export default function RulerTool() {
       <button
         id="grid-toggle"
         onClick={() => setShowGrid((g) => !g)}
-        className={`btn-glass border rounded-lg px-3 py-2 text-xs font-semibold flex items-center gap-1.5 transition-all ${
-          showGrid
-            ? "border-accent/30 text-accent"
-            : "border-border-light text-muted-light hover:text-foreground"
-        }`}
+        className={`btn-glass border rounded-lg px-3 py-2 text-xs font-semibold flex items-center gap-1.5 transition-all ${showGrid
+          ? "border-accent/30 text-accent"
+          : "border-border-light text-muted-light hover:text-foreground"
+          }`}
         aria-label="Toggle grid"
       >
         <Grid3X3 className="w-3.5 h-3.5" />
@@ -2005,11 +1997,10 @@ export default function RulerTool() {
             key={u}
             id={`unit-${u}`}
             onClick={() => handleUnitChange(u)}
-            className={`px-3 py-2 text-xs font-semibold transition-all ${
-              unit === u
-                ? "bg-accent/20 text-accent"
-                : "text-muted hover:text-foreground hover:bg-white/[0.03]"
-            }`}
+            className={`px-3 py-2 text-xs font-semibold transition-all ${unit === u
+              ? "bg-accent/20 text-accent"
+              : "text-muted hover:text-foreground hover:bg-white/[0.03]"
+              }`}
           >
             {u.toUpperCase()}
           </button>
@@ -2054,11 +2045,10 @@ export default function RulerTool() {
       <button
         id="fullscreen-toggle"
         onClick={toggleFullscreen}
-        className={`border rounded-lg px-3 py-2 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm ${
-          inFullscreen
-            ? "border-accent bg-accent/20 text-accent shadow-accent/20 animate-pulse-glow"
-            : "border-accent/40 bg-accent/10 hover:bg-accent/15 hover:border-accent/60 text-accent shadow-accent/5"
-        }`}
+        className={`border rounded-lg px-3 py-2 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm ${inFullscreen
+          ? "border-accent bg-accent/20 text-accent shadow-accent/20 animate-pulse-glow"
+          : "border-accent/40 bg-accent/10 hover:bg-accent/15 hover:border-accent/60 text-accent shadow-accent/5"
+          }`}
         aria-label={inFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
       >
         {inFullscreen ? (
@@ -2082,16 +2072,26 @@ export default function RulerTool() {
             </div>
             <div>
               <h1 className="text-base sm:text-lg font-bold leading-tight">
-                RealOnlineRuler
+                Online Ruler — Measure in cm, mm & Inches
               </h1>
               <p className="text-[11px] text-muted hidden sm:block">
-                Free Accurate Screen Ruler — Actual Size
+                Free Calibrated Screen Ruler at Actual Size
               </p>
             </div>
           </div>
           {renderToolbar(false)}
         </div>
       </header>
+
+      {/* SEO Intro — primary keyword in first 100 words */}
+      <div className="relative z-10 px-4 sm:px-6 pt-3 pb-1">
+        <p className="max-w-6xl mx-auto text-xs text-muted-light leading-relaxed">
+          This <strong>free online ruler</strong> lets you measure objects at <strong>actual size</strong> in{" "}
+          <strong>centimeters (cm)</strong>, <strong>millimeters (mm)</strong>, and <strong>inches</strong> directly
+          on your screen. Calibrate once with a credit card or coin, then drag the precision cursors to get instant,
+          accurate measurements — no app download required.
+        </p>
+      </div>
 
       {/* ─── Calibration Warning ────────────────────────── */}
       {!isCalibrated && (
@@ -2120,15 +2120,15 @@ export default function RulerTool() {
       )}
 
       {/* ─── Ruler Workspace (Normal Mode) ──────────────── */}
-      <main className="flex-1 relative z-10 px-4 sm:px-6 py-4">
+      <main className="relative z-10 px-4 sm:px-6 py-4">
         <div className="max-w-6xl mx-auto flex flex-col lg:flex-row gap-4">
           {/* Ruler area */}
           <div className="flex-1 min-w-0">
             <div
               className="glass rounded-2xl relative overflow-auto flex flex-col custom-scrollbar"
               style={{
-                height: isHorizontal ? "280px" : "520px",
-                minHeight: isHorizontal ? "220px" : "400px",
+                height: isHorizontal ? "500px" : "500px",
+                minHeight: isHorizontal ? "300px" : "500px",
               }}
             >
               <div
@@ -2212,9 +2212,10 @@ export default function RulerTool() {
                 // 1D Mode inputs
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[11px] text-muted mb-1 font-medium">Cursor A</label>
+                    <label htmlFor="cursor-a-input" className="block text-[11px] text-muted mb-1 font-medium">Cursor A</label>
                     <div className="relative flex items-center">
                       <input
+                        id="cursor-a-input"
                         type="number"
                         step="any"
                         value={valAInput}
@@ -2230,9 +2231,10 @@ export default function RulerTool() {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-[11px] text-muted mb-1 font-medium">Cursor B</label>
+                    <label htmlFor="cursor-b-input" className="block text-[11px] text-muted mb-1 font-medium">Cursor B</label>
                     <div className="relative flex items-center">
                       <input
+                        id="cursor-b-input"
                         type="number"
                         step="any"
                         value={valBInput}
@@ -2253,9 +2255,10 @@ export default function RulerTool() {
                 <div className="space-y-3">
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-[11px] text-muted mb-1 font-medium">Width (W)</label>
+                      <label htmlFor="box-w-input" className="block text-[11px] text-muted mb-1 font-medium">Width (W)</label>
                       <div className="relative flex items-center">
                         <input
+                          id="box-w-input"
                           type="number"
                           step="any"
                           value={boxWInput}
@@ -2271,9 +2274,10 @@ export default function RulerTool() {
                       </div>
                     </div>
                     <div>
-                      <label className="block text-[11px] text-muted mb-1 font-medium">Height (H)</label>
+                      <label htmlFor="box-h-input" className="block text-[11px] text-muted mb-1 font-medium">Height (H)</label>
                       <div className="relative flex items-center">
                         <input
+                          id="box-h-input"
                           type="number"
                           step="any"
                           value={boxHInput}
@@ -2289,7 +2293,7 @@ export default function RulerTool() {
                       </div>
                     </div>
                   </div>
-                  
+
                   {/* Boundary coords */}
                   <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-[10px] border-t border-border-light pt-2.5 text-muted">
                     <div className="flex justify-between">
@@ -2320,11 +2324,10 @@ export default function RulerTool() {
                   Screen Info
                 </span>
                 <span
-                  className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
-                    isCalibrated
-                      ? "bg-accent-green/15 text-accent-green"
-                      : "bg-accent-amber/15 text-accent-amber"
-                  }`}
+                  className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${isCalibrated
+                    ? "bg-accent-green/15 text-accent-green"
+                    : "bg-accent-amber/15 text-accent-amber"
+                    }`}
                 >
                   {isCalibrated ? "Calibrated" : "Default"}
                 </span>
@@ -2353,9 +2356,8 @@ export default function RulerTool() {
       {/* ─── Fullscreen Overlay ──────────────────────────── */}
       <div
         ref={fullscreenRef}
-        className={`${
-          isFullscreen ? "fixed inset-0 z-50 flex flex-col bg-slate-950" : "hidden"
-        }`}
+        className={`${isFullscreen ? "fixed inset-0 z-50 flex flex-col bg-slate-950" : "hidden"
+          }`}
       >
         {/* Fullscreen header bar */}
         <div className="flex items-center justify-between gap-3 px-4 py-2.5 border-b border-border bg-slate-950/90 backdrop-blur-sm shrink-0">
@@ -2471,7 +2473,7 @@ export default function RulerTool() {
       <HowToUseRuler />
 
       {/* ─── SEO Content ────────────────────────────────── */}
-      <section className="relative z-10 px-4 sm:px-6 py-12 border-t border-border">
+      <article className="relative z-10 px-4 sm:px-6 py-12 border-t border-border">
         <div className="max-w-4xl mx-auto space-y-12">
           {/* Rich SEO content */}
           <div className="text-center max-w-2xl mx-auto">
@@ -2481,13 +2483,31 @@ export default function RulerTool() {
             <p className="text-sm text-muted-light leading-relaxed">
               RealOnlineRuler is a free, calibrated online ruler that displays at
               actual size on your screen. Unlike other online rulers that silently
-              default to 96 PPI — which is wrong for most modern displays — our
+              default to{" "}
+              <a
+                href="https://en.wikipedia.org/wiki/Pixels_per_inch"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-accent underline underline-offset-2 hover:text-accent/80 transition-colors"
+              >
+                96 PPI
+              </a>{" "}
+              — which is wrong for most modern displays — our
               ruler lets you calibrate with a real-world object like a{" "}
               <strong>credit card</strong>, <strong>US quarter</strong>, or{" "}
               <strong>A4 paper</strong>. Once calibrated, you can measure objects
               in <strong>centimeters (cm)</strong>,{" "}
               <strong>millimeters (mm)</strong>, and{" "}
-              <strong>inches</strong> with precision.
+              <strong>inches</strong> with precision. Our calibration method
+              aligns with{" "}
+              <a
+                href="https://www.nist.gov/pml/owm/metric-si/si-units-length"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-accent underline underline-offset-2 hover:text-accent/80 transition-colors"
+              >
+                NIST length measurement standards
+              </a>.
             </p>
           </div>
 
@@ -2528,7 +2548,7 @@ export default function RulerTool() {
           {/* FAQ */}
           <FAQSection />
         </div>
-      </section>
+      </article>
 
       {/* ─── Footer ─────────────────────────────────────── */}
       <footer className="relative z-10 border-t border-border px-4 sm:px-6 py-6">

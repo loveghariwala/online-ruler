@@ -1,10 +1,16 @@
 import React from "react";
 import Link from "next/link";
+import type { Metadata } from "next";
 import { Ruler, Shield, Zap, Smartphone, ChevronLeft } from "lucide-react";
 
-export const metadata = {
-  title: "About Us | RealOnlineRuler",
-  description: "Learn more about RealOnlineRuler - the free, accurate online ruler tool calibrated to your screen.",
+const siteName = process.env.NEXT_PUBLIC_SITE_NAME || "Real Online Ruler";
+
+export const metadata: Metadata = {
+  title: `About Us | ${siteName}`,
+  description: "Learn about Real Online Ruler — the free, accurate online ruler calibrated to your screen. Built for precision, privacy, and speed.",
+  alternates: {
+    canonical: "/about",
+  },
 };
 
 export default function AboutPage() {

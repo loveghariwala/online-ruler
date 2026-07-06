@@ -1,10 +1,16 @@
 import React from "react";
 import Link from "next/link";
+import type { Metadata } from "next";
 import { Ruler, Mail, MapPin, ChevronLeft } from "lucide-react";
 
-export const metadata = {
-  title: "Contact Us | RealOnlineRuler",
-  description: "Get in touch with the team at RealOnlineRuler. Submit suggestions, bugs, or general feedback.",
+const siteName = process.env.NEXT_PUBLIC_SITE_NAME || "Real Online Ruler";
+
+export const metadata: Metadata = {
+  title: `Contact Us | ${siteName}`,
+  description: "Get in touch with the Real Online Ruler team. Submit suggestions, report bugs, or send general feedback.",
+  alternates: {
+    canonical: "/contact",
+  },
 };
 
 export default function ContactPage() {

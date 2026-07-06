@@ -51,7 +51,7 @@
   --accent-amber: #f59e0b;
 
   --muted: #8493b8;
-  --muted-light: #52638c;
+  --muted-light: #8899b8;
 
   --orb-1: rgba(99, 102, 241, 0.12);
   --orb-2: rgba(249, 115, 22, 0.08);
@@ -417,4 +417,17 @@ body {
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: var(--accent);
+}
+
+/* Screen-reader only utility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
 }

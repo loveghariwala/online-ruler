@@ -1,10 +1,16 @@
 import React from "react";
 import Link from "next/link";
+import type { Metadata } from "next";
 import { Ruler, ChevronLeft } from "lucide-react";
 
-export const metadata = {
-  title: "Terms of Service | RealOnlineRuler",
-  description: "Read the Terms of Service for RealOnlineRuler. Simple, straightforward, open-source friendly terms.",
+const siteName = process.env.NEXT_PUBLIC_SITE_NAME || "Real Online Ruler";
+
+export const metadata: Metadata = {
+  title: `Terms of Service | ${siteName}`,
+  description: "Read the Terms of Service for Real Online Ruler. Simple, straightforward, and open-source friendly terms.",
+  alternates: {
+    canonical: "/terms",
+  },
 };
 
 export default function TermsPage() {

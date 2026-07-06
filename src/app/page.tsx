@@ -77,6 +77,30 @@ const webAppSchema = {
   browserRequirements: "Requires JavaScript. Works in all modern browsers.",
 };
 
+const organizationSchema = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "@id": `${siteUrl}/#organization`,
+  name: siteName,
+  url: siteUrl,
+  logo: `${siteUrl}/icon.png`,
+  description:
+    "Free online ruler tool for accurate screen measurements in cm, mm, and inches.",
+};
+
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    {
+      "@type": "ListItem",
+      position: 1,
+      name: "Home",
+      item: siteUrl,
+    },
+  ],
+};
+
 export default function Home() {
   return (
     <div className="flex flex-col min-h-screen relative">
@@ -92,6 +116,14 @@ export default function Home() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(webAppSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
 
       <RulerTool />

@@ -57,7 +57,7 @@ export const metadata: Metadata = {
       {
         url: "/opengraph-image.png",
         width: 1200,
-        height: 1200,
+        height: 630,
         alt: "RealOnlineRuler UI Layout Preview",
       },
     ],
@@ -94,7 +94,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${inter.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col font-sans">{children}</body>
+      <body className="min-h-full flex flex-col font-sans">
+        {children}
+        <Analytics />
+      </body>
     </html>
   );
 }
