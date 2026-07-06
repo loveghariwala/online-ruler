@@ -62,6 +62,7 @@ const siteName = process.env.NEXT_PUBLIC_SITE_NAME || "Real Online Ruler";
 const webAppSchema = {
   "@context": "https://schema.org",
   "@type": "WebApplication",
+  "@id": `${siteUrl}/#webapplication`,
   name: siteName,
   url: siteUrl,
   applicationCategory: "UtilitiesApplication",
