@@ -66,7 +66,7 @@ export default function PrivacyPolicyPage() {
           <section className="space-y-3 border-t border-white/5 pt-6">
             <h2 className="text-lg font-bold text-slate-200">Local Storage</h2>
             <p className="text-sm text-muted-light leading-relaxed">
-              To improve your user experience, we save your calibration settings (such as calculated PPI, theme mode, and preferred units) to your browser's local storage (`localStorage`). This data never leaves your device and is only used to recall your ruler scale when you return to the site. You can clear this data anytime by clearing your browser's cookies and site data.
+              To improve your user experience, we save your calibration settings (such as calculated PPI, theme mode, and preferred units) to your browser&apos;s local storage (`localStorage`). This data never leaves your device and is only used to recall your ruler scale when you return to the site. You can clear this data anytime by clearing your browser&apos;s cookies and site data.
             </p>
           </section>
 

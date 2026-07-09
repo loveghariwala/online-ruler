@@ -45,7 +45,7 @@ export default function ContactPage() {
             Contact Us
           </h1>
           <p className="text-sm text-muted-light max-w-xl mx-auto">
-            Have questions, feedback, or a feature request? Drop us a line and we'll get back to you as soon as possible.
+            Have questions, feedback, or a feature request? Drop us a line and we&apos;ll get back to you as soon as possible.
           </p>
         </div>
 

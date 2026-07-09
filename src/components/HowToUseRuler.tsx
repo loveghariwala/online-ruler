@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Monitor, MousePointer2, Scaling, ArrowRight, ShieldCheck } from "lucide-react";
+import { Monitor, MousePointer2, Scaling, ShieldCheck } from "lucide-react";
 
 export default function HowToUseRuler() {
   return (
@@ -11,7 +11,7 @@ export default function HowToUseRuler() {
           How to Measure <span className="text-accent">Accurately</span>
         </h2>
         <p className="text-muted-light max-w-xl mx-auto text-sm sm:text-base">
-          Our virtual ruler uses your screen's precise pixel density. Follow these 3 simple steps to get real-world scale measurements directly on your display.
+          Our virtual ruler uses your screen&apos;s precise pixel density. Follow these 3 simple steps to get real-world scale measurements directly on your display.
         </p>
       </div>
 
@@ -29,7 +29,7 @@ export default function HowToUseRuler() {
             Calibrate Screen
           </h3>
           <p className="text-sm text-muted-light leading-relaxed mb-6">
-            Click the "Calibrate" button. Hold a standard credit card, coin, or A4 paper to your screen and adjust the slider until the virtual object matches perfectly.
+            Click the &quot;Calibrate&quot; button. Hold a standard credit card, coin, or A4 paper to your screen and adjust the slider until the virtual object matches perfectly.
           </p>
 
           <div className="w-full h-32 bg-slate-950/50 rounded-xl border border-white/5 relative flex items-center justify-center overflow-hidden">

@@ -53,7 +53,7 @@ export default function AboutPage() {
           <section className="space-y-3">
             <h2 className="text-lg font-bold text-accent">Why We Built This</h2>
             <p className="text-sm text-muted-light leading-relaxed">
-              If you search for an "online ruler", you'll find plenty of basic web tools. However, almost all of them make a fatal assumption: they assume all screens display exactly 96 Pixels Per Inch (PPI). On modern displays, PPI ranges from 80 to over 450, meaning uncalibrated online rulers are off by up to 30%.
+              If you search for an &quot;online ruler&quot;, you&apos;ll find plenty of basic web tools. However, almost all of them make a fatal assumption: they assume all screens display exactly 96 Pixels Per Inch (PPI). On modern displays, PPI ranges from 80 to over 450, meaning uncalibrated online rulers are off by up to 30%.
             </p>
             <p className="text-sm text-muted-light leading-relaxed">
               RealOnlineRuler was built to solve this. By introducing precise screen calibration (card alignment, common presets, diagonal calculation) and dynamic scaling, we ensure that an inch or centimeter on your screen matches its real-world physical counterpart exactly.

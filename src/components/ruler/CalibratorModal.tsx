@@ -30,7 +30,9 @@ export default function CalibratorModal({
     return Math.round(widthInches * ppi);
   });
 
-  const [windowWidth, setWindowWidth] = useState(1000);
+  const [windowWidth, setWindowWidth] = useState(() =>
+    typeof window !== "undefined" ? window.innerWidth : 1000
+  );
 
   // Preset Selection state
   const [presetCategory, setPresetCategory] = useState<"All" | "Laptop" | "Phone" | "Tablet" | "Monitor">("All");
@@ -46,7 +48,6 @@ export default function CalibratorModal({
   const [detectedName, setDetectedName] = useState<string>("");
 
   useEffect(() => {
-    setWindowWidth(window.innerWidth);
     const handleResize = () => setWindowWidth(window.innerWidth);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
@@ -54,7 +55,6 @@ export default function CalibratorModal({
 
   useEffect(() => {
     if (activeTab === "auto") {
-      setAutoStatus("detecting");
       // Simple simulation of detection delay for UX
       const timer = setTimeout(() => {
         try {
@@ -105,18 +105,13 @@ export default function CalibratorModal({
           setDetectedPpi(estPpi);
           setDetectedName(estName);
           setAutoStatus("success");
-        } catch (e) {
+        } catch {
           setAutoStatus("failed");
         }
       }, 600);
       return () => clearTimeout(timer);
     }
   }, [activeTab]);
-
-  useEffect(() => {
-    const widthInches = selectedObj.widthMm / 25.4;
-    setSliderPx(Math.round(widthInches * ppi));
-  }, [selectedObj, ppi]);
 
   const handleSliderChange = (newPx: number) => {
     setSliderPx(newPx);
@@ -132,7 +127,10 @@ export default function CalibratorModal({
     if (!isNaN(diag) && !isNaN(w) && !isNaN(h) && diag > 0) {
       const diagPx = Math.sqrt(w * w + h * h);
       const calculatedPpi = diagPx / diag;
-      onPpiChange(Math.round(calculatedPpi * 100) / 100);
+      const roundedPpi = Math.round(calculatedPpi * 100) / 100;
+      onPpiChange(roundedPpi);
+      const widthInches = selectedObj.widthMm / 25.4;
+      setSliderPx(Math.round(widthInches * roundedPpi));
     }
   };
 
@@ -245,7 +243,10 @@ export default function CalibratorModal({
         {/* Tab Buttons */}
         <div className="flex border-b border-border/20 mb-4 shrink-0 overflow-x-auto custom-scrollbar">
           <button
-            onClick={() => setActiveTab("auto")}
+            onClick={() => {
+              setActiveTab("auto");
+              setAutoStatus("detecting");
+            }}
             className={`flex-1 min-w-[100px] pb-2 text-center text-xs font-semibold border-b-2 transition-all cursor-pointer ${activeTab === "auto" ? "border-accent text-accent" : "border-transparent text-muted hover:text-foreground"
               }`}
           >
@@ -279,7 +280,7 @@ export default function CalibratorModal({
           {activeTab === "auto" && (
             <div className="space-y-4">
               <p className="text-sm text-muted-light">
-                We'll automatically try to detect your screen resolution and device type to estimate the correct PPI.
+                We&apos;ll automatically try to detect your screen resolution and device type to estimate the correct PPI.
               </p>
 
               <div className="bg-surface/50 border border-border-light rounded-xl p-6 text-center space-y-4 min-h-[200px] flex flex-col items-center justify-center">
@@ -335,7 +336,11 @@ export default function CalibratorModal({
                 {CALIBRATION_OBJECTS.map((obj) => (
                   <button
                     key={obj.id}
-                    onClick={() => setSelectedObj(obj)}
+                    onClick={() => {
+                      setSelectedObj(obj);
+                      const widthInches = obj.widthMm / 25.4;
+                      setSliderPx(Math.round(widthInches * ppi));
+                    }}
                     className={`btn-glass rounded-lg px-3 py-2.5 text-left text-xs transition-all ${selectedObj.id === obj.id
                       ? "border-accent bg-accent/10 text-accent font-semibold"
                       : "border-border-light bg-surface/50 text-muted hover:text-foreground"
@@ -433,6 +438,8 @@ export default function CalibratorModal({
                     key={dev.name}
                     onClick={() => {
                       onPpiChange(dev.ppi);
+                      const widthInches = selectedObj.widthMm / 25.4;
+                      setSliderPx(Math.round(widthInches * dev.ppi));
                     }}
                     className={`w-full px-4 py-3 text-left flex justify-between items-center hover:bg-white/[0.03] transition-colors cursor-pointer text-xs ${Math.abs(ppi - dev.ppi) < 0.1 ? "text-accent font-semibold bg-accent/5" : "text-foreground"
                       }`}

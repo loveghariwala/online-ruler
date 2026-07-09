@@ -10,14 +10,9 @@ import {
   Move,
   Grid3X3,
   ChevronDown,
-  ChevronUp,
   Shield,
   Zap,
   Smartphone,
-  Copy,
-  Check,
-  Minus,
-  Plus,
   Info,
   ArrowLeftRight,
   ArrowUpDown,
@@ -29,17 +24,12 @@ import {
   ZoomOut,
 } from "lucide-react";
 import {
-  CALIBRATION_OBJECTS,
   UNITS,
   pxToUnit,
-  inchesToFraction,
   DEFAULT_PPI,
   STORAGE_KEY_PPI,
   STORAGE_KEY_UNIT,
   type UnitType,
-  type CalibrationObject,
-  type DevicePreset,
-  DEVICE_PRESETS,
 } from "@/lib/constants";
 
 import CalibratorModal from "./ruler/CalibratorModal";
@@ -87,10 +77,10 @@ export default function RulerTool() {
     try {
       const savedTheme = localStorage.getItem("preciselyruler_theme") as "dark" | "light" | null;
       if (savedTheme) {
-        setTheme(savedTheme);
+        setTimeout(() => setTheme(savedTheme), 0);
       } else {
         const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-        setTheme(prefersDark ? "dark" : "light");
+        setTimeout(() => setTheme(prefersDark ? "dark" : "light"), 0);
       }
     } catch {
       // localStorage unavailable
@@ -112,8 +102,7 @@ export default function RulerTool() {
     }
   }, [theme]);
 
-  // Directional Measurement Modes
-  const [measurementMode, setMeasurementMode] = useState<
+  const [measurementMode] = useState<
     "free" | "left" | "right" | "top" | "bottom" | "box"
   >("free");
 
@@ -183,12 +172,15 @@ export default function RulerTool() {
     try {
       const savedPpi = localStorage.getItem(STORAGE_KEY_PPI);
       if (savedPpi) {
-        setPpi(parseFloat(savedPpi));
-        setIsCalibrated(true);
+        const parsedPpi = parseFloat(savedPpi);
+        setTimeout(() => {
+          setPpi(parsedPpi);
+          setIsCalibrated(true);
+        }, 0);
       }
       const savedUnit = localStorage.getItem(STORAGE_KEY_UNIT);
       if (savedUnit && (savedUnit === "cm" || savedUnit === "mm" || savedUnit === "in" || savedUnit === "px")) {
-        setUnit(savedUnit);
+        setTimeout(() => setUnit(savedUnit), 0);
       }
     } catch {
       // localStorage unavailable
@@ -197,29 +189,31 @@ export default function RulerTool() {
 
   // Lock cursors based on measurementMode and active workspace dimensions
   useEffect(() => {
-    if (measurementMode === "left") {
-      setOrientation("horizontal");
-      setCursorA(0);
-      setCursorB(Math.round(workspaceSize.w * 0.4));
-    } else if (measurementMode === "right") {
-      setOrientation("horizontal");
-      setCursorA(workspaceSize.w);
-      setCursorB(Math.round(workspaceSize.w * 0.6));
-    } else if (measurementMode === "top") {
-      setOrientation("vertical");
-      setCursorA(0);
-      setCursorB(Math.round(workspaceSize.h * 0.4));
-    } else if (measurementMode === "bottom") {
-      setOrientation("vertical");
-      setCursorA(workspaceSize.h);
-      setCursorB(Math.round(workspaceSize.h * 0.6));
-    } else if (measurementMode === "box") {
-      // Setup initial box sizing within current boundaries
-      setCursorLeft(Math.round(workspaceSize.w * 0.2));
-      setCursorRight(Math.round(workspaceSize.w * 0.8));
-      setCursorTop(Math.round(workspaceSize.h * 0.2));
-      setCursorBottom(Math.round(workspaceSize.h * 0.8));
-    }
+    setTimeout(() => {
+      if (measurementMode === "left") {
+        setOrientation("horizontal");
+        setCursorA(0);
+        setCursorB(Math.round(workspaceSize.w * 0.4));
+      } else if (measurementMode === "right") {
+        setOrientation("horizontal");
+        setCursorA(workspaceSize.w);
+        setCursorB(Math.round(workspaceSize.w * 0.6));
+      } else if (measurementMode === "top") {
+        setOrientation("vertical");
+        setCursorA(0);
+        setCursorB(Math.round(workspaceSize.h * 0.4));
+      } else if (measurementMode === "bottom") {
+        setOrientation("vertical");
+        setCursorA(workspaceSize.h);
+        setCursorB(Math.round(workspaceSize.h * 0.6));
+      } else if (measurementMode === "box") {
+        // Setup initial box sizing within current boundaries
+        setCursorLeft(Math.round(workspaceSize.w * 0.2));
+        setCursorRight(Math.round(workspaceSize.w * 0.8));
+        setCursorTop(Math.round(workspaceSize.h * 0.2));
+        setCursorBottom(Math.round(workspaceSize.h * 0.8));
+      }
+    }, 0);
   }, [measurementMode, workspaceSize.w, workspaceSize.h]);
 
   // Save PPI
@@ -266,16 +260,16 @@ export default function RulerTool() {
       if (el) {
         if (el.requestFullscreen) {
           el.requestFullscreen();
-        } else if ((el as any).webkitRequestFullscreen) {
-          (el as any).webkitRequestFullscreen();
+        } else if ((el as unknown as { webkitRequestFullscreen?: () => void }).webkitRequestFullscreen) {
+          (el as unknown as { webkitRequestFullscreen?: () => void }).webkitRequestFullscreen!();
         }
       }
       setIsFullscreen(true);
     } else {
       if (document.exitFullscreen) {
         document.exitFullscreen();
-      } else if ((document as any).webkitExitFullscreen) {
-        (document as any).webkitExitFullscreen();
+      } else if ((document as unknown as { webkitExitFullscreen?: () => void }).webkitExitFullscreen) {
+        (document as unknown as { webkitExitFullscreen?: () => void }).webkitExitFullscreen!();
       }
       setIsFullscreen(false);
     }
@@ -388,30 +382,11 @@ export default function RulerTool() {
   const [isFocusW, setIsFocusW] = useState(false);
   const [isFocusH, setIsFocusH] = useState(false);
 
-  // Sync inputs dynamically during drag operations or PPI/Zoom/Unit updates when not focused
-  useEffect(() => {
-    if (!isFocusA) {
-      setValAInput(pxToUnit(cursorA, ppi * zoom, unit).toFixed(2));
-    }
-  }, [cursorA, ppi, zoom, unit, isFocusA]);
-
-  useEffect(() => {
-    if (!isFocusB) {
-      setValBInput(pxToUnit(cursorB, ppi * zoom, unit).toFixed(2));
-    }
-  }, [cursorB, ppi, zoom, unit, isFocusB]);
-
-  useEffect(() => {
-    if (!isFocusW) {
-      setBoxWInput(pxToUnit(cursorRight - cursorLeft, ppi * zoom, unit).toFixed(2));
-    }
-  }, [cursorLeft, cursorRight, ppi, zoom, unit, isFocusW]);
-
-  useEffect(() => {
-    if (!isFocusH) {
-      setBoxHInput(pxToUnit(cursorBottom - cursorTop, ppi * zoom, unit).toFixed(2));
-    }
-  }, [cursorTop, cursorBottom, ppi, zoom, unit, isFocusH]);
+  // Derive inputs dynamically during drag operations or PPI/Zoom/Unit updates when not focused
+  const displayValA = isFocusA ? valAInput : pxToUnit(cursorA, ppi * zoom, unit).toFixed(2);
+  const displayValB = isFocusB ? valBInput : pxToUnit(cursorB, ppi * zoom, unit).toFixed(2);
+  const displayBoxW = isFocusW ? boxWInput : pxToUnit(cursorRight - cursorLeft, ppi * zoom, unit).toFixed(2);
+  const displayBoxH = isFocusH ? boxHInput : pxToUnit(cursorBottom - cursorTop, ppi * zoom, unit).toFixed(2);
 
   const handleAInputSubmit = useCallback(() => {
     const val = parseFloat(valAInput);
@@ -714,7 +689,6 @@ export default function RulerTool() {
         return sorted.slice(0, -1).map((x, i) => {
           const nextX = sorted[i + 1];
           const dist = nextX - x;
-          const midX = x + dist / 2;
           return (
             <div key={`vd-${i}`} className="absolute pointer-events-none z-25" style={{ left: `${x}px`, top: "50%", width: `${dist}px`, height: "0" }}>
               {/* Connector line */}
@@ -1425,9 +1399,9 @@ export default function RulerTool() {
           <input
             type="number"
             step="any"
-            value={valAInput}
+            value={displayValA}
             onChange={(e) => setValAInput(e.target.value)}
-            onFocus={() => setIsFocusA(true)}
+            onFocus={() => { setIsFocusA(true); setValAInput(pxToUnit(cursorA, ppi * zoom, unit).toFixed(2)); }}
             onBlur={() => { setIsFocusA(false); handleAInputSubmit(); }}
             onKeyDown={(e) => e.key === "Enter" && handleAInputSubmit()}
             className="w-12 bg-transparent text-xs font-semibold text-foreground focus:outline-none text-center"
@@ -1437,9 +1411,9 @@ export default function RulerTool() {
           <input
             type="number"
             step="any"
-            value={valBInput}
+            value={displayValB}
             onChange={(e) => setValBInput(e.target.value)}
-            onFocus={() => setIsFocusB(true)}
+            onFocus={() => { setIsFocusB(true); setValBInput(pxToUnit(cursorB, ppi * zoom, unit).toFixed(2)); }}
             onBlur={() => { setIsFocusB(false); handleBInputSubmit(); }}
             onKeyDown={(e) => e.key === "Enter" && handleBInputSubmit()}
             className="w-12 bg-transparent text-xs font-semibold text-foreground focus:outline-none text-center"
@@ -1455,9 +1429,9 @@ export default function RulerTool() {
           <input
             type="number"
             step="any"
-            value={boxWInput}
+            value={displayBoxW}
             onChange={(e) => setBoxWInput(e.target.value)}
-            onFocus={() => setIsFocusW(true)}
+            onFocus={() => { setIsFocusW(true); setBoxWInput(pxToUnit(cursorRight - cursorLeft, ppi * zoom, unit).toFixed(2)); }}
             onBlur={() => { setIsFocusW(false); handleBoxWInputSubmit(); }}
             onKeyDown={(e) => e.key === "Enter" && handleBoxWInputSubmit()}
             className="w-12 bg-transparent text-xs font-semibold text-foreground focus:outline-none text-center"
@@ -1467,9 +1441,9 @@ export default function RulerTool() {
           <input
             type="number"
             step="any"
-            value={boxHInput}
+            value={displayBoxH}
             onChange={(e) => setBoxHInput(e.target.value)}
-            onFocus={() => setIsFocusH(true)}
+            onFocus={() => { setIsFocusH(true); setBoxHInput(pxToUnit(cursorBottom - cursorTop, ppi * zoom, unit).toFixed(2)); }}
             onBlur={() => { setIsFocusH(false); handleBoxHInputSubmit(); }}
             onKeyDown={(e) => e.key === "Enter" && handleBoxHInputSubmit()}
             className="w-12 bg-transparent text-xs font-semibold text-foreground focus:outline-none text-center"
@@ -1811,9 +1785,9 @@ export default function RulerTool() {
                         id="cursor-a-input"
                         type="number"
                         step="any"
-                        value={valAInput}
+                        value={displayValA}
                         onChange={(e) => setValAInput(e.target.value)}
-                        onFocus={() => setIsFocusA(true)}
+                        onFocus={() => { setIsFocusA(true); setValAInput(pxToUnit(cursorA, ppi * zoom, unit).toFixed(2)); }}
                         onBlur={() => { setIsFocusA(false); handleAInputSubmit(); }}
                         onKeyDown={(e) => e.key === "Enter" && handleAInputSubmit()}
                         className="w-full bg-surface-light border border-border-light rounded-lg pl-2.5 pr-8 py-1.5 text-xs font-semibold text-foreground focus:outline-none focus:border-accent"
@@ -1830,9 +1804,9 @@ export default function RulerTool() {
                         id="cursor-b-input"
                         type="number"
                         step="any"
-                        value={valBInput}
+                        value={displayValB}
                         onChange={(e) => setValBInput(e.target.value)}
-                        onFocus={() => setIsFocusB(true)}
+                        onFocus={() => { setIsFocusB(true); setValBInput(pxToUnit(cursorB, ppi * zoom, unit).toFixed(2)); }}
                         onBlur={() => { setIsFocusB(false); handleBInputSubmit(); }}
                         onKeyDown={(e) => e.key === "Enter" && handleBInputSubmit()}
                         className="w-full bg-surface-light border border-border-light rounded-lg pl-2.5 pr-8 py-1.5 text-xs font-semibold text-foreground focus:outline-none focus:border-accent"
@@ -1854,9 +1828,9 @@ export default function RulerTool() {
                           id="box-w-input"
                           type="number"
                           step="any"
-                          value={boxWInput}
+                          value={displayBoxW}
                           onChange={(e) => setBoxWInput(e.target.value)}
-                          onFocus={() => setIsFocusW(true)}
+                          onFocus={() => { setIsFocusW(true); setBoxWInput(pxToUnit(cursorRight - cursorLeft, ppi * zoom, unit).toFixed(2)); }}
                           onBlur={() => { setIsFocusW(false); handleBoxWInputSubmit(); }}
                           onKeyDown={(e) => e.key === "Enter" && handleBoxWInputSubmit()}
                           className="w-full bg-surface-light border border-border-light rounded-lg pl-2.5 pr-8 py-1.5 text-xs font-semibold text-foreground focus:outline-none focus:border-accent"
@@ -1873,9 +1847,9 @@ export default function RulerTool() {
                           id="box-h-input"
                           type="number"
                           step="any"
-                          value={boxHInput}
+                          value={displayBoxH}
                           onChange={(e) => setBoxHInput(e.target.value)}
-                          onFocus={() => setIsFocusH(true)}
+                          onFocus={() => { setIsFocusH(true); setBoxHInput(pxToUnit(cursorBottom - cursorTop, ppi * zoom, unit).toFixed(2)); }}
                           onBlur={() => { setIsFocusH(false); handleBoxHInputSubmit(); }}
                           onKeyDown={(e) => e.key === "Enter" && handleBoxHInputSubmit()}
                           className="w-full bg-surface-light border border-border-light rounded-lg pl-2.5 pr-8 py-1.5 text-xs font-semibold text-foreground focus:outline-none focus:border-accent"

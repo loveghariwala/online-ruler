@@ -162,7 +162,7 @@ export default function RulerSVG({
             key={`S${i}-${j}`}
             x1={x1}
             y1={actualSubPos}
-            x2={tickLen}
+            x2={x2}
             y2={actualSubPos}
             className="stroke-muted/30"
             strokeWidth={sw}
