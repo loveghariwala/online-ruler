@@ -42,950 +42,11 @@ import {
   DEVICE_PRESETS,
 } from "@/lib/constants";
 
-// ─── Calibrator Modal ────────────────────────────────────────────
-function CalibratorModal({
-  isOpen,
-  onClose,
-  ppi,
-  onPpiChange,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  ppi: number;
-  onPpiChange: (ppi: number) => void;
-}) {
-  const [activeTab, setActiveTab] = useState<"object" | "presets" | "diagonal">("object");
-  const [selectedObj, setSelectedObj] = useState<CalibrationObject>(
-    CALIBRATION_OBJECTS[0]
-  );
-  const [sliderPx, setSliderPx] = useState(() => {
-    const widthInches = selectedObj.widthMm / 25.4;
-    return Math.round(widthInches * ppi);
-  });
-
-  const [windowWidth, setWindowWidth] = useState(1000);
-
-  // Preset Selection state
-  const [presetCategory, setPresetCategory] = useState<"All" | "Laptop" | "Phone" | "Tablet" | "Monitor">("All");
-
-  // Diagonal Input state
-  const [diagonalInches, setDiagonalInches] = useState("15.6");
-  const [resW, setResW] = useState("1920");
-  const [resH, setResH] = useState("1080");
-
-  useEffect(() => {
-    setWindowWidth(window.innerWidth);
-    const handleResize = () => setWindowWidth(window.innerWidth);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  useEffect(() => {
-    const widthInches = selectedObj.widthMm / 25.4;
-    setSliderPx(Math.round(widthInches * ppi));
-  }, [selectedObj, ppi]);
-
-  const handleSliderChange = (newPx: number) => {
-    setSliderPx(newPx);
-    const widthInches = selectedObj.widthMm / 25.4;
-    const newPpi = newPx / widthInches;
-    onPpiChange(Math.round(newPpi * 100) / 100);
-  };
-
-  const applyDiagonalPpi = () => {
-    const diag = parseFloat(diagonalInches);
-    const w = parseFloat(resW);
-    const h = parseFloat(resH);
-    if (!isNaN(diag) && !isNaN(w) && !isNaN(h) && diag > 0) {
-      const diagPx = Math.sqrt(w * w + h * h);
-      const calculatedPpi = diagPx / diag;
-      onPpiChange(Math.round(calculatedPpi * 100) / 100);
-    }
-  };
-
-  const isCircular =
-    selectedObj.id === "us-quarter" ||
-    selectedObj.id === "euro-1" ||
-    selectedObj.id === "inr-10";
-
-  const isTooWide = sliderPx > windowWidth - 64;
-
-  const renderVisualObject = (id: string, widthPx: number) => {
-    const isCircularObj =
-      id === "us-quarter" || id === "euro-1" || id === "inr-10";
-
-    if (id === "credit-card") {
-      return (
-        <div
-          className="relative bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950 dark:from-slate-900 dark:via-slate-950 dark:to-black rounded-xl shadow-2xl flex flex-col justify-between p-4 border border-white/10 select-none overflow-hidden transition-all duration-200"
-          style={{ width: `${widthPx}px`, height: `${Math.round(widthPx * 0.63)}px` }}
-        >
-          <div className="absolute top-0 right-0 w-24 h-24 bg-accent/5 rounded-full blur-2xl pointer-events-none" />
-          <div className="flex justify-between items-start shrink-0">
-            <div className="w-8 h-6 rounded bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 border border-amber-600/30 flex flex-col justify-between p-1">
-              <div className="h-[1px] bg-amber-700/40 w-full" />
-              <div className="h-[1px] bg-amber-700/40 w-full" />
-              <div className="h-[1px] bg-amber-700/40 w-full" />
-            </div>
-            <div className="text-[8px] font-bold text-accent/80 tracking-wider">PRECISE</div>
-          </div>
-          <div className="space-y-1 font-mono text-[9px] tracking-widest text-slate-400/90 uppercase">
-            <div>•••• •••• •••• ••••</div>
-            <div className="flex justify-between text-[6px]">
-              <span>RealOnlineRuler</span>
-              <span>08/29</span>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    if (isCircularObj) {
-      const isGoldInner = id === "inr-10" || id === "euro-1";
-      const coinSymbol = id === "us-quarter" ? "25¢" : id === "euro-1" ? "1 €" : "₹10";
-
-      return (
-        <div
-          className="rounded-full shadow-2xl border-4 border-double border-slate-300 dark:border-slate-500 flex items-center justify-center select-none transition-all duration-200 overflow-hidden relative animate-pulse-glow"
-          style={{
-            width: `${widthPx}px`,
-            height: `${widthPx}px`,
-            background: isGoldInner
-              ? "radial-gradient(circle, #d97706 60%, #cbd5e1 65%)"
-              : "radial-gradient(circle, #cbd5e1 70%, #94a3b8 90%)"
-          }}
-        >
-          <div className="absolute inset-1.5 border border-black/5 rounded-full pointer-events-none" />
-          <div className="text-center font-bold text-slate-800 dark:text-slate-100 drop-shadow-sm flex flex-col items-center">
-            <span className="text-[7px] uppercase tracking-wider opacity-60 font-semibold text-slate-900 dark:text-slate-300">ACTUAL</span>
-            <span className="text-sm font-extrabold text-slate-900 dark:text-slate-50">{coinSymbol}</span>
-          </div>
-        </div>
-      );
-    }
-
-    return (
-      <div
-        className="relative bg-white dark:bg-slate-100 rounded shadow-lg flex flex-col justify-between p-4 border border-slate-200 select-none transition-all duration-200"
-        style={{ width: `${widthPx}px`, height: `${Math.round(widthPx * 0.7)}px` }}
-      >
-        <div className="space-y-1.5 w-full">
-          <div className="h-1 bg-slate-300 rounded w-1/3" />
-          <div className="h-1 bg-slate-200 rounded w-3/4" />
-          <div className="h-1 bg-slate-200 rounded w-5/6" />
-          <div className="h-1 bg-slate-200 rounded w-2/3" />
-        </div>
-        <div className="text-[7px] text-slate-400 font-mono flex justify-between items-center mt-2">
-          <span>{selectedObj.name}</span>
-          <span>1:1 Size</span>
-        </div>
-      </div>
-    );
-  };
-
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-      <div
-        className="glass relative z-10 w-full rounded-2xl p-6 animate-fade-in-up flex flex-col transition-all duration-300 max-h-[calc(100vh-2rem)]"
-        style={{
-          maxWidth: activeTab === "object" ? `min(calc(100vw - 32px), ${isCircular ? 480 : Math.max(480, sliderPx + 64)}px)` : "480px"
-        }}
-      >
-        {/* Sticky Header */}
-        <div className="flex items-center justify-between mb-4 shrink-0">
-          <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
-            <Settings2 className="w-5 h-5 text-accent" />
-            Screen Calibration
-          </h3>
-          <button
-            onClick={onClose}
-            className="text-muted hover:text-foreground transition-colors text-xl leading-none p-1 cursor-pointer"
-            aria-label="Close calibration"
-          >
-            ✕
-          </button>
-        </div>
-
-        {/* Tab Buttons */}
-        <div className="flex border-b border-border/20 mb-4 shrink-0">
-          <button
-            onClick={() => setActiveTab("object")}
-            className={`flex-1 pb-2 text-center text-xs font-semibold border-b-2 transition-all cursor-pointer ${activeTab === "object" ? "border-accent text-accent" : "border-transparent text-muted hover:text-foreground"
-              }`}
-          >
-            💳 Real Object
-          </button>
-          <button
-            onClick={() => setActiveTab("presets")}
-            className={`flex-1 pb-2 text-center text-xs font-semibold border-b-2 transition-all cursor-pointer ${activeTab === "presets" ? "border-accent text-accent" : "border-transparent text-muted hover:text-foreground"
-              }`}
-          >
-            💻 Device Presets
-          </button>
-          <button
-            onClick={() => setActiveTab("diagonal")}
-            className={`flex-1 pb-2 text-center text-xs font-semibold border-b-2 transition-all cursor-pointer ${activeTab === "diagonal" ? "border-accent text-accent" : "border-transparent text-muted hover:text-foreground"
-              }`}
-          >
-            📐 Screen Size
-          </button>
-        </div>
-
-        {/* Scrollable middle content */}
-        <div className="flex-1 overflow-y-auto pr-1 space-y-5 min-h-0 custom-scrollbar pb-1">
-          {activeTab === "object" && (
-            <>
-              <p className="text-sm text-muted-light">
-                Place a real object on your screen and adjust the slider until the
-                on-screen shape matches your physical object exactly.
-              </p>
-
-              {/* Object selector */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {CALIBRATION_OBJECTS.map((obj) => (
-                  <button
-                    key={obj.id}
-                    onClick={() => setSelectedObj(obj)}
-                    className={`btn-glass rounded-lg px-3 py-2.5 text-left text-xs transition-all ${selectedObj.id === obj.id
-                      ? "border-accent bg-accent/10 text-accent font-semibold"
-                      : "border-border-light bg-surface/50 text-muted hover:text-foreground"
-                      } border cursor-pointer`}
-                  >
-                    <span className="text-base mr-1">{obj.emoji}</span>
-                    <span className="font-medium">{obj.name}</span>
-                  </button>
-                ))}
-              </div>
-
-              {/* Dynamic Warning if selected object exceeds screen width */}
-              {isTooWide && (
-                <div className="p-3 rounded-lg bg-accent-amber/15 border border-accent-amber/30 text-accent-amber text-xs flex items-center gap-2">
-                  <Info className="w-4 h-4 shrink-0" />
-                  <span>
-                    This object is wider than your screen. Please calibrate using a credit card or coin.
-                  </span>
-                </div>
-              )}
-
-              {/* Visual representation */}
-              <div className="flex items-center justify-center min-h-[140px] border border-dashed border-border-light rounded-xl bg-surface-light/35 p-4 overflow-hidden">
-                {renderVisualObject(selectedObj.id, sliderPx)}
-              </div>
-
-              {/* Slider */}
-              <div>
-                <div className="flex items-center justify-between text-xs text-muted mb-2 font-mono">
-                  <span>Smaller</span>
-                  <span className="text-accent font-semibold">
-                    {sliderPx}px → {Math.round(ppi)} PPI
-                  </span>
-                  <span>Larger</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => handleSliderChange(Math.max(20, sliderPx - 1))}
-                    className="btn-glass border border-border-light rounded-lg p-1.5 text-muted-light hover:text-foreground cursor-pointer"
-                    aria-label="Decrease size"
-                  >
-                    <Minus className="w-3.5 h-3.5" />
-                  </button>
-                  <input
-                    type="range"
-                    min={20}
-                    max={800}
-                    value={sliderPx}
-                    onChange={(e) => handleSliderChange(Number(e.target.value))}
-                    className="calibrator-slider flex-1"
-                    aria-label="Calibrate size"
-                  />
-                  <button
-                    onClick={() => handleSliderChange(Math.min(800, sliderPx + 1))}
-                    className="btn-glass border border-border-light rounded-lg p-1.5 text-muted-light hover:text-foreground cursor-pointer"
-                    aria-label="Increase size"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
-
-              <p className="text-[11px] text-muted text-center italic">
-                {selectedObj.description}
-              </p>
-            </>
-          )}
-
-          {activeTab === "presets" && (
-            <>
-              <p className="text-sm text-muted-light">
-                Select your device from our database to set the exact factory calibrated PPI automatically.
-              </p>
-
-              {/* Category Filter */}
-              <div className="flex flex-wrap gap-1">
-                {(["All", "Laptop", "Phone", "Tablet", "Monitor"] as const).map((cat) => (
-                  <button
-                    key={cat}
-                    onClick={() => setPresetCategory(cat)}
-                    className={`px-2.5 py-1 text-[10px] sm:text-xs font-semibold rounded-md border transition-all cursor-pointer ${presetCategory === cat
-                      ? "border-accent bg-accent/15 text-accent"
-                      : "border-border-light text-muted hover:text-foreground"
-                      }`}
-                  >
-                    {cat}
-                  </button>
-                ))}
-              </div>
-
-              {/* Presets List */}
-              <div className="max-h-[220px] overflow-y-auto border border-border-light rounded-xl bg-surface-light/20 divide-y divide-border-light custom-scrollbar">
-                {DEVICE_PRESETS.filter(p => presetCategory === "All" || p.category === presetCategory).map((dev) => (
-                  <button
-                    key={dev.name}
-                    onClick={() => {
-                      onPpiChange(dev.ppi);
-                    }}
-                    className={`w-full px-4 py-3 text-left flex justify-between items-center hover:bg-white/[0.03] transition-colors cursor-pointer text-xs ${Math.abs(ppi - dev.ppi) < 0.1 ? "text-accent font-semibold bg-accent/5" : "text-foreground"
-                      }`}
-                  >
-                    <div>
-                      <div className="font-medium">{dev.name}</div>
-                      <div className="text-[10px] text-muted font-normal mt-0.5">{dev.category}</div>
-                    </div>
-                    <div className="font-mono text-[10px] sm:text-xs bg-surface border border-border-light px-2 py-0.5 rounded-md">
-                      {dev.ppi} PPI
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
-
-          {activeTab === "diagonal" && (
-            <>
-              <p className="text-sm text-muted-light">
-                Enter your physical screen diagonal size and current resolution to calculate screen density.
-              </p>
-
-              <div className="space-y-4">
-                <div>
-                  <label htmlFor="diag-input" className="block text-xs font-semibold text-muted mb-1.5">
-                    Screen Diagonal (Inches)
-                  </label>
-                  <input
-                    id="diag-input"
-                    type="number"
-                    step="0.1"
-                    min="1"
-                    max="100"
-                    value={diagonalInches}
-                    onChange={(e) => {
-                      setDiagonalInches(e.target.value);
-                    }}
-                    className="w-full bg-surface-light/40 border border-border-light focus:border-accent focus:outline-none rounded-xl px-3.5 py-2.5 text-xs text-foreground font-semibold"
-                    placeholder="e.g. 15.6, 27, 6.1"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label htmlFor="res-w-input" className="block text-xs font-semibold text-muted mb-1.5">
-                      Resolution Width (px)
-                    </label>
-                    <input
-                      id="res-w-input"
-                      type="number"
-                      value={resW}
-                      onChange={(e) => {
-                        setResW(e.target.value);
-                      }}
-                      className="w-full bg-surface-light/40 border border-border-light focus:border-accent focus:outline-none rounded-xl px-3.5 py-2.5 text-xs text-foreground font-mono font-semibold"
-                      placeholder="e.g. 1920"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="res-h-input" className="block text-xs font-semibold text-muted mb-1.5">
-                      Resolution Height (px)
-                    </label>
-                    <input
-                      id="res-h-input"
-                      type="number"
-                      value={resH}
-                      onChange={(e) => {
-                        setResH(e.target.value);
-                      }}
-                      className="w-full bg-surface-light/40 border border-border-light focus:border-accent focus:outline-none rounded-xl px-3.5 py-2.5 text-xs text-foreground font-mono font-semibold"
-                      placeholder="e.g. 1080"
-                    />
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={applyDiagonalPpi}
-                  className="w-full py-2.5 rounded-xl border border-accent/20 bg-accent/10 hover:bg-accent/15 text-accent font-semibold text-xs transition-all cursor-pointer"
-                >
-                  Calculate & Apply ({(Math.round((Math.sqrt(parseFloat(resW || "0") ** 2 + parseFloat(resH || "0") ** 2) / (parseFloat(diagonalInches) || 1)) * 100) / 100) || 0} PPI)
-                </button>
-              </div>
-            </>
-          )}
-        </div>
-
-        {/* Sticky footer */}
-        <div className="pt-4 border-t border-border/20 shrink-0">
-          <button
-            onClick={onClose}
-            className="w-full py-2.5 rounded-xl bg-accent border border-accent/25 text-surface font-semibold text-sm hover:opacity-90 transition-all cursor-pointer shadow-lg"
-          >
-            Done — Save Calibration ({Math.round(ppi)} PPI)
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── Measurement Display ────────────────────────────────────────
-function MeasurementDisplay({
-  distancePx,
-  heightPx,
-  ppi,
-  activeUnit,
-  compact,
-}: {
-  distancePx: number;
-  heightPx?: number;
-  ppi: number;
-  activeUnit: UnitType;
-  compact?: boolean;
-}) {
-  const [copied, setCopied] = useState(false);
-
-  const cmValW = pxToUnit(distancePx, ppi, "cm");
-  const mmValW = pxToUnit(distancePx, ppi, "mm");
-  const inValW = pxToUnit(distancePx, ppi, "in");
-  const pxValW = distancePx;
-  const fracStrW = inchesToFraction(inValW);
-
-  const isBox = typeof heightPx === "number";
-
-  const cmValH = isBox ? pxToUnit(heightPx!, ppi, "cm") : 0;
-  const mmValH = isBox ? pxToUnit(heightPx!, ppi, "mm") : 0;
-  const inValH = isBox ? pxToUnit(heightPx!, ppi, "in") : 0;
-  const pxValH = isBox ? heightPx! : 0;
-  const fracStrH = isBox ? inchesToFraction(inValH) : "";
-
-  const primaryValueW =
-    activeUnit === "cm"
-      ? cmValW.toFixed(2)
-      : activeUnit === "mm"
-        ? mmValW.toFixed(1)
-        : activeUnit === "px"
-          ? Math.round(distancePx).toString()
-          : inValW.toFixed(3);
-
-  const primaryValueH = isBox
-    ? activeUnit === "cm"
-      ? cmValH.toFixed(2)
-      : activeUnit === "mm"
-        ? mmValH.toFixed(1)
-        : activeUnit === "px"
-          ? Math.round(heightPx!).toString()
-          : inValH.toFixed(3)
-    : "";
-
-  const handleCopy = () => {
-    const text = isBox
-      ? `Width: ${primaryValueW}${UNITS[activeUnit].shortLabel}, Height: ${primaryValueH}${UNITS[activeUnit].shortLabel}`
-      : `${primaryValueW} ${UNITS[activeUnit].shortLabel}`;
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
-  };
-
-  const getSubValuesString = (cmVal: number, mmVal: number, inVal: number, pxVal: number, fracStr: string) => {
-    const parts: string[] = [];
-    if (activeUnit !== "cm") parts.push(`${cmVal.toFixed(1)}cm`);
-    if (activeUnit !== "mm") parts.push(`${mmVal.toFixed(0)}mm`);
-    if (activeUnit !== "in") parts.push(fracStr || `${inVal.toFixed(2)}"`);
-    if (activeUnit !== "px") parts.push(`${Math.round(pxVal)}px`);
-    return parts.join(" / ");
-  };
-
-  if (compact) {
-    if (isBox) {
-      return (
-        <div className="glass rounded-xl px-4 py-3 flex items-center gap-4 flex-wrap">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs text-muted">Width:</span>
-              <span className="text-xl font-bold text-glow-blue text-accent tabular-nums">
-                {primaryValueW}
-              </span>
-              <span className="text-xs text-accent/70 font-medium">
-                {UNITS[activeUnit].shortLabel}
-              </span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs text-muted">Height:</span>
-              <span className="text-xl font-bold text-glow-red text-accent-red tabular-nums">
-                {primaryValueH}
-              </span>
-              <span className="text-xs text-accent-red/70 font-medium">
-                {UNITS[activeUnit].shortLabel}
-              </span>
-            </div>
-          </div>
-          <div className="h-6 w-px bg-border-light hidden sm:block" />
-          <div className="flex items-center gap-3 text-[11px] text-muted-light">
-            <span>
-              W: {getSubValuesString(cmValW, mmValW, inValW, pxValW, fracStrW)}
-            </span>
-            <span>
-              H: {getSubValuesString(cmValH, mmValH, inValH, pxValH, fracStrH)}
-            </span>
-          </div>
-          <button
-            onClick={handleCopy}
-            className="ml-auto text-muted-light hover:text-accent transition-colors"
-            aria-label="Copy measurements"
-          >
-            {copied ? (
-              <Check className="w-4 h-4 text-accent-green" />
-            ) : (
-              <Copy className="w-4 h-4" />
-            )}
-          </button>
-        </div>
-      );
-    }
-
-    return (
-      <div className="glass rounded-xl px-4 py-3 flex items-center gap-4">
-        <div className="flex items-center gap-1.5">
-          <span className="text-2xl font-bold text-glow-blue text-accent tabular-nums">
-            {primaryValueW}
-          </span>
-          <span className="text-sm text-accent/70 font-medium">
-            {UNITS[activeUnit].shortLabel}
-          </span>
-        </div>
-        <div className="h-6 w-px bg-border-light" />
-        <div className="flex items-center gap-3 text-xs flex-wrap">
-          {activeUnit !== "cm" && (
-            <span className="text-muted-light tabular-nums">
-              <span className="text-muted">CM</span> {cmValW.toFixed(2)}
-            </span>
-          )}
-          {activeUnit !== "mm" && (
-            <span className="text-muted-light tabular-nums">
-              <span className="text-muted">MM</span> {mmValW.toFixed(1)}
-            </span>
-          )}
-          {activeUnit !== "in" && (
-            <span className="text-muted-light tabular-nums">
-              <span className="text-muted">IN</span> {fracStrW}
-            </span>
-          )}
-          {activeUnit !== "px" && (
-            <span className="text-muted-light tabular-nums">
-              <span className="text-muted">PX</span> {Math.round(pxValW)}
-            </span>
-          )}
-        </div>
-        <button
-          onClick={handleCopy}
-          className="ml-auto text-muted-light hover:text-accent transition-colors"
-          aria-label="Copy measurement"
-        >
-          {copied ? (
-            <Check className="w-4 h-4 text-accent-green" />
-          ) : (
-            <Copy className="w-4 h-4" />
-          )}
-        </button>
-      </div>
-    );
-  }
-
-  if (isBox) {
-    return (
-      <div className="glass rounded-2xl p-4 sm:p-5 space-y-4">
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-medium text-muted uppercase tracking-wider">
-            Box Dimensions (2D)
-          </span>
-          <button
-            onClick={handleCopy}
-            className="flex items-center gap-1.5 text-xs text-muted-light hover:text-accent transition-colors"
-            aria-label="Copy measurements"
-          >
-            {copied ? (
-              <Check className="w-3.5 h-3.5 text-accent-green" />
-            ) : (
-              <Copy className="w-3.5 h-3.5" />
-            )}
-            {copied ? "Copied" : "Copy All"}
-          </button>
-        </div>
-
-        {/* Width */}
-        <div className="glass-light rounded-xl p-3">
-          <div className="text-xs text-muted mb-1 font-semibold">WIDTH (W)</div>
-          <div className="flex justify-between items-baseline">
-            <div>
-              <span className="text-2xl sm:text-3xl font-bold text-glow-blue text-accent tabular-nums">
-                {primaryValueW}
-              </span>
-              <span className="text-sm text-accent/70 ml-1">
-                {UNITS[activeUnit].shortLabel}
-              </span>
-            </div>
-            <div className="text-xs text-muted-light font-mono">
-              {getSubValuesString(cmValW, mmValW, inValW, pxValW, fracStrW)}
-            </div>
-          </div>
-        </div>
-
-        {/* Height */}
-        <div className="glass-light rounded-xl p-3">
-          <div className="text-xs text-muted-red mb-1 font-semibold text-accent-red">HEIGHT (H)</div>
-          <div className="flex justify-between items-baseline">
-            <div>
-              <span className="text-2xl sm:text-3xl font-bold text-glow-red text-accent-red tabular-nums">
-                {primaryValueH}
-              </span>
-              <span className="text-sm text-accent-red/70 ml-1">
-                {UNITS[activeUnit].shortLabel}
-              </span>
-            </div>
-            <div className="text-xs text-muted-light font-mono">
-              {getSubValuesString(cmValH, mmValH, inValH, pxValH, fracStrH)}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="glass rounded-2xl p-4 sm:p-5">
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-xs font-medium text-muted uppercase tracking-wider">
-          Measurement
-        </span>
-        <button
-          onClick={handleCopy}
-          className="flex items-center gap-1.5 text-xs text-muted-light hover:text-accent transition-colors"
-          aria-label="Copy measurement"
-        >
-          {copied ? (
-            <Check className="w-3.5 h-3.5 text-accent-green" />
-          ) : (
-            <Copy className="w-3.5 h-3.5" />
-          )}
-          {copied ? "Copied" : "Copy"}
-        </button>
-      </div>
-
-      {/* Primary reading */}
-      <div className="text-center mb-4">
-        <span className="text-4xl sm:text-5xl font-bold text-glow-blue text-accent tabular-nums">
-          {primaryValueW}
-        </span>
-        <span className="text-lg text-accent/70 ml-2 font-medium">
-          {UNITS[activeUnit].shortLabel}
-        </span>
-      </div>
-
-      {/* Secondary readings */}
-      <div className="grid grid-cols-3 gap-3 text-center">
-        {activeUnit !== "cm" && (
-          <div className="glass-light rounded-lg py-2 px-1">
-            <div className="text-xs text-muted mb-0.5">CM</div>
-            <div className="text-sm font-semibold tabular-nums">
-              {cmValW.toFixed(2)}
-            </div>
-          </div>
-        )}
-        {activeUnit !== "mm" && (
-          <div className="glass-light rounded-lg py-2 px-1">
-            <div className="text-xs text-muted mb-0.5">MM</div>
-            <div className="text-sm font-semibold tabular-nums">
-              {mmValW.toFixed(1)}
-            </div>
-          </div>
-        )}
-        {activeUnit !== "in" && (
-          <div className="glass-light rounded-lg py-2 px-1">
-            <div className="text-xs text-muted mb-0.5">Inches</div>
-            <div className="text-sm font-semibold tabular-nums">{fracStrW}</div>
-          </div>
-        )}
-        {activeUnit !== "px" && (
-          <div className="glass-light rounded-lg py-2 px-1">
-            <div className="text-xs text-muted mb-0.5">Pixels</div>
-            <div className="text-sm font-semibold tabular-nums">{Math.round(pxValW)}</div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ─── FAQ Section ────────────────────────────────────────────────
-const FAQ_DATA = [
-  {
-    q: "Why is my online ruler inaccurate by default?",
-    a: "Most browsers report a default resolution of 96 PPI (pixels per inch), which does not match most modern screens. Without proper calibration, rulers can be off by 10–30%. RealOnlineRuler solves this by letting you visually calibrate using a credit card, coin, or paper — objects with standardized sizes.",
-  },
-  {
-    q: "How do I calibrate my screen ruler to show actual size?",
-    a: "Click the 'Calibrate' button and select a reference object you have on hand (e.g., a credit card is 85.6 mm wide). Place the real object on your screen and drag the slider until the on-screen shape matches perfectly. This calculates your true PPI and is saved for future visits.",
-  },
-  {
-    q: "Does this virtual ruler work on mobile phones?",
-    a: "Yes! RealOnlineRuler is fully responsive and touch-optimized. It works on iPhones, Android phones, iPads, and tablets. The drag-to-measure cursors support touch gestures. For best results on mobile, calibrate using a coin that fits comfortably on your phone screen.",
-  },
-  {
-    q: "What is the difference between metric (cm/mm) and imperial (inches) online rulers?",
-    a: "Metric rulers use centimeters and millimeters (1 cm = 10 mm). Imperial rulers use inches and fractions (1 inch = 25.4 mm). RealOnlineRuler supports both systems simultaneously — toggle between cm, mm, and inches instantly. All three readings are always displayed.",
-  },
-  {
-    q: "Is my privacy protected when using this online ruler?",
-    a: "Absolutely. RealOnlineRuler processes everything 100% in your browser. We do not access your camera, upload images, or track your measurements. Your calibration data is saved locally on your device using localStorage — it never leaves your computer.",
-  },
-  {
-    q: "Can I measure vertically and use this as a virtual measuring tape?",
-    a: "Yes! Click the orientation toggle to switch between horizontal and vertical rulers. You can also enable the 2D Grid mode to measure both width and height simultaneously, turning your screen into a precise graph-paper grid — like a virtual measuring tape.",
-  },
-];
-
-function FAQSection() {
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
-
-  return (
-    <section className="w-full max-w-3xl mx-auto" id="faq-section">
-      <h2 className="text-xl sm:text-2xl font-bold text-center mb-2">
-        Frequently Asked Questions
-      </h2>
-      <p className="text-sm text-muted text-center mb-8">
-        Everything you need to know about using an online ruler accurately.
-      </p>
-      <div className="space-y-3">
-        {FAQ_DATA.map((item, i) => (
-          <div key={i} className="glass rounded-xl overflow-hidden">
-            <button
-              onClick={() => setOpenIndex(openIndex === i ? null : i)}
-              className="w-full flex items-center justify-between p-4 text-left hover:bg-white/[0.02] transition-colors"
-              aria-expanded={openIndex === i}
-              aria-controls={`faq-answer-${i}`}
-              id={`faq-question-${i}`}
-            >
-              <span className="text-sm font-medium text-foreground pr-4">
-                {item.q}
-              </span>
-              {openIndex === i ? (
-                <ChevronUp className="w-4 h-4 text-accent shrink-0" />
-              ) : (
-                <ChevronDown className="w-4 h-4 text-muted shrink-0" />
-              )}
-            </button>
-            <div
-              id={`faq-answer-${i}`}
-              role="region"
-              aria-labelledby={`faq-question-${i}`}
-              className={`transition-all duration-300 ease-in-out ${openIndex === i
-                ? "max-h-96 opacity-100"
-                : "max-h-0 opacity-0 overflow-hidden"
-                }`}
-            >
-              <p className="px-4 pb-4 text-sm text-muted-light leading-relaxed">
-                {item.a}
-              </p>
-            </div>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-// ─── Ruler SVG ──────────────────────────────────────────────────
-function RulerSVG({
-  lengthPx,
-  ppi,
-  unit,
-  side,
-  thickness,
-  direction = "normal",
-}: {
-  lengthPx: number;
-  ppi: number;
-  unit: UnitType;
-  side: "top" | "bottom" | "left" | "right";
-  thickness?: number;
-  direction?: "normal" | "reverse";
-}) {
-  const isMm = unit === "mm";
-  const isPx = unit === "px";
-  const displayUnit = isMm ? "cm" : unit;
-
-  let pxPerUnit = 0;
-  if (isPx) {
-    pxPerUnit = 100;
-  } else {
-    const unitsPerInch = UNITS[displayUnit].perInch;
-    pxPerUnit = ppi / unitsPerInch;
-  }
-
-  const isHorizontal = side === "top" || side === "bottom";
-  const totalUnits = Math.ceil(lengthPx / pxPerUnit);
-  const th = thickness ?? 65;
-
-  const svgW = isHorizontal ? lengthPx : th;
-  const svgH = isHorizontal ? th : lengthPx;
-
-  // Space labels dynamically based on scale density to prevent overlaps
-  let labelInterval = 1;
-  if (unit === "mm") {
-    labelInterval = pxPerUnit >= 50 ? 2 : 5;
-  } else if (unit === "cm") {
-    if (pxPerUnit < 20) {
-      labelInterval = 5;
-    } else if (pxPerUnit < 35) {
-      labelInterval = 2;
-    }
-  }
-
-  const lines: React.ReactNode[] = [];
-  const labels: React.ReactNode[] = [];
-
-  for (let i = 0; i <= totalUnits; i++) {
-    const pos = Math.round(i * pxPerUnit);
-    if (pos > lengthPx) break;
-
-    const actualPos = direction === "reverse" ? lengthPx - pos : pos;
-    const majorLen = 38;
-
-    // Major tick
-    if (isHorizontal) {
-      const y1 = side === "top" ? 0 : th;
-      const y2 = side === "top" ? majorLen : th - majorLen;
-      lines.push(
-        <line key={`M${i}`} x1={actualPos} y1={y1} x2={actualPos} y2={y2} className="stroke-accent" strokeWidth={1.5} />
-      );
-      if (i > 0 && i % labelInterval === 0) {
-        const ly = side === "top" ? majorLen + 16 : th - majorLen - 6;
-        const labelText = isMm ? i * 10 : isPx ? i * 100 : i;
-        labels.push(
-          <text key={`L${i}`} x={actualPos} y={ly} textAnchor="middle" className="fill-muted font-medium" fontSize={11} fontFamily="Inter, sans-serif">{labelText}</text>
-        );
-      }
-    } else {
-      const x1 = side === "left" ? 0 : th;
-      const x2 = side === "left" ? majorLen : th - majorLen;
-      lines.push(
-        <line key={`M${i}`} x1={x1} y1={actualPos} x2={x2} y2={actualPos} className="stroke-accent" strokeWidth={1.5} />
-      );
-      if (i > 0 && i % labelInterval === 0) {
-        const lx = side === "left" ? majorLen + 16 : th - majorLen - 6;
-        const labelText = isMm ? i * 10 : isPx ? i * 100 : i;
-        labels.push(
-          <text key={`L${i}`} x={lx} y={actualPos + 4} textAnchor="middle" className="fill-muted font-medium" fontSize={11} fontFamily="Inter, sans-serif">{labelText}</text>
-        );
-      }
-    }
-
-    // Sub-ticks
-    const subDivisions = displayUnit === "in" ? 8 : 10;
-    for (let j = 1; j < subDivisions; j++) {
-      const subPos = Math.round(pos + (j * pxPerUnit) / subDivisions);
-      if (subPos > lengthPx) break;
-
-      const actualSubPos = direction === "reverse" ? lengthPx - subPos : subPos;
-      const isMid =
-        (displayUnit === "in" && j === 4) ||
-        ((displayUnit === "cm" || displayUnit === "px") && j === 5);
-      const isQuarter = displayUnit === "in" && (j === 2 || j === 6);
-      const tickLen = isMid ? 26 : isQuarter ? 20 : 14;
-      const sw = isMid ? 1 : 0.7;
-
-      if (isHorizontal) {
-        const y1 = side === "top" ? 0 : th;
-        const y2 = side === "top" ? tickLen : th - tickLen;
-        lines.push(
-          <line key={`S${i}-${j}`} x1={actualSubPos} y1={y1} x2={actualSubPos} y2={y2} className="stroke-muted/30" strokeWidth={sw} />
-        );
-      } else {
-        const x1 = side === "left" ? 0 : th;
-        const x2 = side === "left" ? tickLen : th - tickLen;
-        lines.push(
-          <line key={`S${i}-${j}`} x1={x1} y1={actualSubPos} x2={tickLen} y2={actualSubPos} className="stroke-muted/30" strokeWidth={sw} />
-        );
-      }
-    }
-  }
-
-  // Edge line
-  let edgeLine: React.ReactNode = null;
-  if (side === "top") {
-    edgeLine = <line x1={0} y1={0} x2={lengthPx} y2={0} className="stroke-accent/30" strokeWidth={2} />;
-  } else if (side === "bottom") {
-    edgeLine = <line x1={0} y1={th} x2={lengthPx} y2={th} className="stroke-accent/30" strokeWidth={2} />;
-  } else if (side === "left") {
-    edgeLine = <line x1={0} y1={0} x2={0} y2={lengthPx} className="stroke-accent/30" strokeWidth={2} />;
-  } else {
-    edgeLine = <line x1={th} y1={0} x2={th} y2={lengthPx} className="stroke-accent/30" strokeWidth={2} />;
-  }
-
-  return (
-    <svg width={svgW} height={svgH} className="block shrink-0">
-      {edgeLine}
-      {lines}
-      {labels}
-    </svg>
-  );
-}
-
-// ─── Grid Overlay ───────────────────────────────────────────────
-function GridOverlay({
-  widthPx,
-  heightPx,
-  ppi,
-  unit,
-}: {
-  widthPx: number;
-  heightPx: number;
-  ppi: number;
-  unit: UnitType;
-}) {
-  const unitsPerInch = UNITS[unit].perInch;
-  const pxPerUnit = ppi / unitsPerInch;
-
-  const lines: React.ReactNode[] = [];
-
-  for (let x = pxPerUnit; x < widthPx; x += pxPerUnit) {
-    lines.push(
-      <line key={`gv-${x}`} x1={x} y1={0} x2={x} y2={heightPx} className="stroke-muted/10" strokeWidth={0.5} />
-    );
-  }
-  for (let y = pxPerUnit; y < heightPx; y += pxPerUnit) {
-    lines.push(
-      <line key={`gh-${y}`} x1={0} y1={y} x2={widthPx} y2={y} className="stroke-muted/10" strokeWidth={0.5} />
-    );
-  }
-
-  return (
-    <svg className="absolute inset-0 pointer-events-none" width={widthPx} height={heightPx}>
-      {lines}
-    </svg>
-  );
-}
-
+import CalibratorModal from "./ruler/CalibratorModal";
+import MeasurementDisplay from "./ruler/MeasurementDisplay";
+import FAQSection from "./ruler/FAQSection";
+import RulerSVG from "./ruler/RulerSVG";
+import GridOverlay from "./ruler/GridOverlay";
 
 // ─── Main Ruler Tool ────────────────────────────────────────────
 const RULER_THICKNESS = 65; // px thickness for the side ruler bars
@@ -1002,6 +63,24 @@ export default function RulerTool() {
   const [showCalibrator, setShowCalibrator] = useState(false);
   const [isCalibrated, setIsCalibrated] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Modular Workspace Toggles
+  const [showLeftRuler, setShowLeftRuler] = useState(true);
+  const [showRightRuler, setShowRightRuler] = useState(false);
+  const [showTopRuler, setShowTopRuler] = useState(true);
+  const [showBottomRuler, setShowBottomRuler] = useState(false);
+  const [showCrosshair, setShowCrosshair] = useState(false);
+  const [showCoordinates, setShowCoordinates] = useState(false);
+  const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(null);
+
+  // Interactive Guidelines
+  const [verticalGuides, setVerticalGuides] = useState<number[]>([]);
+  const [horizontalGuides, setHorizontalGuides] = useState<number[]>([]);
+  const [draggedGuide, setDraggedGuide] = useState<{ type: "v" | "h"; index: number } | null>(null);
+  const [guidePreview, setGuidePreview] = useState<{ type: "v" | "h"; pos: number } | null>(null);
+
+  // Welcome Panel
+  const [showWelcomePanel, setShowWelcomePanel] = useState(true);
 
   // Load theme from localStorage
   useEffect(() => {
@@ -1243,44 +322,35 @@ export default function RulerTool() {
       }
 
       switch (e.key.toLowerCase()) {
+        // Unit shortcuts
+        case "1":
+          e.preventDefault();
+          handleUnitChange("cm");
+          break;
+        case "2":
+          e.preventDefault();
+          handleUnitChange("in");
+          break;
+        case "3":
+          e.preventDefault();
+          handleUnitChange("px");
+          break;
+        // Toggle shortcuts
+        case "c":
+          e.preventDefault();
+          setShowCrosshair((prev) => !prev);
+          break;
+        case "g":
+          e.preventDefault();
+          setShowCoordinates((prev) => !prev);
+          break;
         case "f":
           e.preventDefault();
           toggleFullscreen();
           break;
-        case "g":
-          e.preventDefault();
-          setShowGrid((prev) => !prev);
-          break;
         case "d":
           e.preventDefault();
           setTheme((prev) => (prev === "dark" ? "light" : "dark"));
-          break;
-        case "c":
-          e.preventDefault();
-          setShowCalibrator((prev) => !prev);
-          break;
-        case "u":
-          e.preventDefault();
-          setUnit((prev) => {
-            const units: UnitType[] = ["cm", "mm", "in", "px"];
-            const idx = units.indexOf(prev);
-            return units[(idx + 1) % units.length];
-          });
-          break;
-        case "m":
-          e.preventDefault();
-          setMeasurementMode((prev) => {
-            const modes: ("free" | "left" | "right" | "top" | "bottom" | "box")[] = [
-              "free",
-              "left",
-              "right",
-              "top",
-              "bottom",
-              "box",
-            ];
-            const idx = modes.indexOf(prev);
-            return modes[(idx + 1) % modes.length];
-          });
           break;
         case "r":
           e.preventDefault();
@@ -1291,12 +361,17 @@ export default function RulerTool() {
           setCursorTop(Math.round(workspaceSize.h * 0.2));
           setCursorBottom(Math.round(workspaceSize.h * 0.8));
           break;
+        case "escape":
+          e.preventDefault();
+          setVerticalGuides([]);
+          setHorizontalGuides([]);
+          break;
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [toggleFullscreen, workspaceSize]);
+  }, [toggleFullscreen, workspaceSize, handleUnitChange]);
 
   // Drag handlers for 1D mode
   const isHorizontal = orientation === "horizontal";
@@ -1453,6 +528,9 @@ export default function RulerTool() {
       };
 
       const handleMove = (moveEvent: MouseEvent | TouchEvent) => {
+        if (moveEvent.cancelable) {
+          moveEvent.preventDefault();
+        }
         const currentPos = getEventPos(moveEvent);
         const delta = currentPos - dragRef.current.startPos;
         const newVal = Math.max(
@@ -1520,6 +598,9 @@ export default function RulerTool() {
       };
 
       const handleMove = (moveEvent: MouseEvent | TouchEvent) => {
+        if (moveEvent.cancelable) {
+          moveEvent.preventDefault();
+        }
         const currentPos = getEventPos2D(isHorizontalDrag, moveEvent);
         const delta = currentPos - dragRef.current.startPos;
         const limit = isHorizontalDrag ? workspaceSize.w : workspaceSize.h;
@@ -1555,6 +636,314 @@ export default function RulerTool() {
   const distancePx = Math.abs(cursorB - cursorA);
   const showCursorA = measurementMode === "free";
   const isBoxMode = measurementMode === "box";
+
+  // Determine if any ruler is active (for welcome panel logic)
+  const anyRulerActive = showLeftRuler || showRightRuler || showTopRuler || showBottomRuler;
+
+  // ─── Interactive Guidelines Rendering ────────────────────────────
+  const renderGuidelines = () => (
+    <>
+      {/* Vertical guidelines (X-axis lines) */}
+      {verticalGuides.map((x, i) => (
+        <div key={`vg-${i}`}>
+          {/* The guideline itself */}
+          <div
+            className="absolute top-0 h-full z-30 cursor-ew-resize group"
+            style={{ left: `${x}px`, width: "1px" }}
+            onMouseDown={(e) => {
+              e.stopPropagation();
+              setDraggedGuide({ type: "v", index: i });
+            }}
+          >
+            <div className="absolute inset-y-0 -left-[6px] w-[13px] group-hover:bg-accent/10 transition-colors" />
+            <div className="absolute inset-y-0 left-0 w-[1.5px] bg-accent/70 group-hover:bg-accent" />
+          </div>
+          {/* Coordinate badge */}
+          <div
+            className="absolute z-35 bg-surface/90 border border-border-light rounded px-1.5 py-0.5 text-[10px] font-mono font-semibold text-accent pointer-events-none whitespace-nowrap shadow-sm"
+            style={{ left: `${x + 4}px`, top: "4px" }}
+          >
+            {pxToUnit(x, ppi * zoom, unit).toFixed(1)} {UNITS[unit].shortLabel}
+          </div>
+        </div>
+      ))}
+
+      {/* Horizontal guidelines (Y-axis lines) */}
+      {horizontalGuides.map((y, i) => (
+        <div key={`hg-${i}`}>
+          {/* The guideline itself */}
+          <div
+            className="absolute left-0 w-full z-30 cursor-ns-resize group"
+            style={{ top: `${y}px`, height: "1px" }}
+            onMouseDown={(e) => {
+              e.stopPropagation();
+              setDraggedGuide({ type: "h", index: i });
+            }}
+          >
+            <div className="absolute inset-x-0 -top-[6px] h-[13px] group-hover:bg-accent-secondary/10 transition-colors" />
+            <div className="absolute inset-x-0 top-0 h-[1.5px] bg-accent-secondary/70 group-hover:bg-accent-secondary" />
+          </div>
+          {/* Coordinate badge */}
+          <div
+            className="absolute z-35 bg-surface/90 border border-border-light rounded px-1.5 py-0.5 text-[10px] font-mono font-semibold text-accent-secondary pointer-events-none whitespace-nowrap shadow-sm"
+            style={{ left: "4px", top: `${y + 4}px` }}
+          >
+            {pxToUnit(y, ppi * zoom, unit).toFixed(1)} {UNITS[unit].shortLabel}
+          </div>
+        </div>
+      ))}
+
+      {/* Guide preview line */}
+      {guidePreview && (
+        guidePreview.type === "v" ? (
+          <div
+            className="absolute top-0 h-full pointer-events-none z-25"
+            style={{ left: `${guidePreview.pos}px`, width: "1.5px", background: "var(--accent)", opacity: 0.35 }}
+          />
+        ) : (
+          <div
+            className="absolute left-0 w-full pointer-events-none z-25"
+            style={{ top: `${guidePreview.pos}px`, height: "1.5px", background: "var(--accent-secondary)", opacity: 0.35 }}
+          />
+        )
+      )}
+
+      {/* Distance measurements between adjacent vertical guidelines */}
+      {verticalGuides.length >= 2 && (() => {
+        const sorted = [...verticalGuides].sort((a, b) => a - b);
+        return sorted.slice(0, -1).map((x, i) => {
+          const nextX = sorted[i + 1];
+          const dist = nextX - x;
+          const midX = x + dist / 2;
+          return (
+            <div key={`vd-${i}`} className="absolute pointer-events-none z-25" style={{ left: `${x}px`, top: "50%", width: `${dist}px`, height: "0" }}>
+              {/* Connector line */}
+              <div className="absolute top-0 left-0 right-0 h-[1px] border-t border-dashed border-accent/40" />
+              {/* Left arrow */}
+              <div className="absolute -left-[3px] -top-[3px] w-[7px] h-[7px] border-l-2 border-b-2 border-accent/60 rotate-45" />
+              {/* Right arrow */}
+              <div className="absolute -right-[3px] -top-[3px] w-[7px] h-[7px] border-r-2 border-t-2 border-accent/60 rotate-45" />
+              {/* Distance label */}
+              <div
+                className="absolute -top-5 bg-surface/90 border border-accent/30 rounded px-1.5 py-0.5 text-[9px] font-mono font-bold text-accent whitespace-nowrap shadow-sm"
+                style={{ left: `${(dist / 2) - 20}px` }}
+              >
+                {pxToUnit(dist, ppi * zoom, unit).toFixed(2)} {UNITS[unit].shortLabel}
+              </div>
+            </div>
+          );
+        });
+      })()}
+
+      {/* Distance measurements between adjacent horizontal guidelines */}
+      {horizontalGuides.length >= 2 && (() => {
+        const sorted = [...horizontalGuides].sort((a, b) => a - b);
+        return sorted.slice(0, -1).map((y, i) => {
+          const nextY = sorted[i + 1];
+          const dist = nextY - y;
+          return (
+            <div key={`hd-${i}`} className="absolute pointer-events-none z-25" style={{ left: "50%", top: `${y}px`, width: "0", height: `${dist}px` }}>
+              {/* Connector line */}
+              <div className="absolute left-0 top-0 bottom-0 w-[1px] border-l border-dashed border-accent-secondary/40" />
+              {/* Top arrow */}
+              <div className="absolute -left-[3px] -top-[3px] w-[7px] h-[7px] border-l-2 border-t-2 border-accent-secondary/60 rotate-45" style={{ transform: "rotate(45deg)" }} />
+              {/* Bottom arrow */}
+              <div className="absolute -left-[3px] -bottom-[3px] w-[7px] h-[7px] border-r-2 border-b-2 border-accent-secondary/60 rotate-45" style={{ transform: "rotate(45deg)" }} />
+              {/* Distance label */}
+              <div
+                className="absolute left-3 bg-surface/90 border border-accent-secondary/30 rounded px-1.5 py-0.5 text-[9px] font-mono font-bold text-accent-secondary whitespace-nowrap shadow-sm"
+                style={{ top: `${(dist / 2) - 8}px` }}
+              >
+                {pxToUnit(dist, ppi * zoom, unit).toFixed(2)} {UNITS[unit].shortLabel}
+              </div>
+            </div>
+          );
+        });
+      })()}
+    </>
+  );
+
+  // ─── Welcome Onboarding Panel ──────────────────────────────────
+  const renderWelcomePanel = () => {
+    if (!showWelcomePanel) return null;
+    return (
+      <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
+        <div className="pointer-events-auto max-w-lg mx-auto text-center space-y-5 p-6">
+          {/* Icon */}
+          <div className="w-12 h-12 mx-auto rounded-xl bg-surface-light border border-border-light flex items-center justify-center">
+            <svg viewBox="0 0 24 24" className="w-6 h-6 text-muted" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="2" y="8" width="20" height="8" rx="1.5" />
+              <line x1="6" y1="8" x2="6" y2="11" />
+              <line x1="10" y1="8" x2="10" y2="13" />
+              <line x1="14" y1="8" x2="14" y2="11" />
+              <line x1="18" y1="8" x2="18" y2="12" />
+            </svg>
+          </div>
+
+          {/* Title */}
+          <div>
+            <h2 className="text-lg font-bold text-foreground mb-1">Place a ruler on any edge.</h2>
+            <p className="text-sm text-muted">Choose an edge from the toolbar above, or click a shortcut below.</p>
+          </div>
+
+          {/* Shortcut Cards */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <button
+              onClick={() => setShowLeftRuler(true)}
+              className={`rounded-xl border p-3 text-left transition-all cursor-pointer ${showLeftRuler ? "border-accent/40 bg-accent/5" : "border-border-light bg-surface-light/50 hover:border-accent/30 hover:bg-accent/5"}`}
+            >
+              <div className="text-[10px] uppercase tracking-wider text-muted font-semibold mb-0.5">Left</div>
+              <div className="text-sm font-semibold text-foreground">Vertical</div>
+            </button>
+            <button
+              onClick={() => setShowRightRuler(true)}
+              className={`rounded-xl border p-3 text-left transition-all cursor-pointer ${showRightRuler ? "border-accent/40 bg-accent/5" : "border-border-light bg-surface-light/50 hover:border-accent/30 hover:bg-accent/5"}`}
+            >
+              <div className="text-[10px] uppercase tracking-wider text-muted font-semibold mb-0.5">Right</div>
+              <div className="text-sm font-semibold text-foreground">Vertical</div>
+            </button>
+            <button
+              onClick={() => setShowTopRuler(true)}
+              className={`rounded-xl border p-3 text-left transition-all cursor-pointer ${showTopRuler ? "border-accent/40 bg-accent/5" : "border-border-light bg-surface-light/50 hover:border-accent/30 hover:bg-accent/5"}`}
+            >
+              <div className="text-[10px] uppercase tracking-wider text-muted font-semibold mb-0.5">Top</div>
+              <div className="text-sm font-semibold text-foreground">Horizontal</div>
+            </button>
+            <button
+              onClick={() => setShowBottomRuler(true)}
+              className={`rounded-xl border p-3 text-left transition-all cursor-pointer ${showBottomRuler ? "border-accent/40 bg-accent/5" : "border-border-light bg-surface-light/50 hover:border-accent/30 hover:bg-accent/5"}`}
+            >
+              <div className="text-[10px] uppercase tracking-wider text-muted font-semibold mb-0.5">Bottom</div>
+              <div className="text-sm font-semibold text-foreground">Horizontal</div>
+            </button>
+          </div>
+
+          {/* Calibration Status */}
+          <div className="inline-flex items-center gap-2 bg-surface-light/70 border border-border-light rounded-full px-4 py-1.5 text-xs text-muted">
+            <span className={`w-2 h-2 rounded-full ${isCalibrated ? "bg-accent-green" : "bg-accent-amber animate-pulse"}`} />
+            <span>{isCalibrated ? "Calibrated" : "Not calibrated"} · {Math.round(ppi)} PPI</span>
+            <span className="text-border-light">·</span>
+            <button onClick={() => setShowCalibrator(true)} className="text-accent hover:underline cursor-pointer font-medium">
+              {isCalibrated ? "Recalibrate" : "Calibrate now"}
+            </button>
+          </div>
+
+          {/* Hide button */}
+          <div>
+            <button
+              onClick={() => setShowWelcomePanel(false)}
+              className="text-xs text-muted hover:text-foreground transition-colors cursor-pointer underline underline-offset-2"
+            >
+              Hide this info
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // ─── Workspace mouse handlers for guideline interactions ─────────
+  const handleWorkspaceMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = Math.round((e.clientX - rect.left) / zoom);
+    const y = Math.round((e.clientY - rect.top) / zoom);
+    setMousePos({ x, y });
+
+    // If dragging a guideline, update its position
+    if (draggedGuide) {
+      if (draggedGuide.type === "v") {
+        setVerticalGuides(prev => {
+          const next = [...prev];
+          next[draggedGuide.index] = x;
+          return next;
+        });
+      } else {
+        setHorizontalGuides(prev => {
+          const next = [...prev];
+          next[draggedGuide.index] = y;
+          return next;
+        });
+      }
+    }
+  }, [draggedGuide, zoom]);
+
+  const handleWorkspaceMouseUp = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (draggedGuide) {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const x = Math.round((e.clientX - rect.left) / zoom);
+      const y = Math.round((e.clientY - rect.top) / zoom);
+
+      // Delete guideline if dragged off-screen or onto a ruler edge
+      if (draggedGuide.type === "v" && (x < 0 || x > workspaceSize.w)) {
+        setVerticalGuides(prev => prev.filter((_, i) => i !== draggedGuide.index));
+      } else if (draggedGuide.type === "h" && (y < 0 || y > workspaceSize.h)) {
+        setHorizontalGuides(prev => prev.filter((_, i) => i !== draggedGuide.index));
+      }
+      setDraggedGuide(null);
+    }
+  }, [draggedGuide, workspaceSize, zoom]);
+
+  // ─── Ruler click/hover handlers for dropping guidelines ──────────
+  const handleTopRulerClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = Math.round((e.clientX - rect.left) / zoom);
+    if (x > 0 && x < workspaceSize.w) {
+      setVerticalGuides(prev => [...prev, x]);
+    }
+  }, [zoom, workspaceSize.w]);
+
+  const handleBottomRulerClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = Math.round((e.clientX - rect.left) / zoom);
+    if (x > 0 && x < workspaceSize.w) {
+      setVerticalGuides(prev => [...prev, x]);
+    }
+  }, [zoom, workspaceSize.w]);
+
+  const handleLeftRulerClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const y = Math.round((e.clientY - rect.top) / zoom);
+    if (y > 0 && y < workspaceSize.h) {
+      setHorizontalGuides(prev => [...prev, y]);
+    }
+  }, [zoom, workspaceSize.h]);
+
+  const handleRightRulerClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const y = Math.round((e.clientY - rect.top) / zoom);
+    if (y > 0 && y < workspaceSize.h) {
+      setHorizontalGuides(prev => [...prev, y]);
+    }
+  }, [zoom, workspaceSize.h]);
+
+  // Ruler hover preview handlers
+  const handleTopRulerHover = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = Math.round((e.clientX - rect.left) / zoom);
+    setGuidePreview({ type: "v", pos: x });
+  }, [zoom]);
+
+  const handleBottomRulerHover = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = Math.round((e.clientX - rect.left) / zoom);
+    setGuidePreview({ type: "v", pos: x });
+  }, [zoom]);
+
+  const handleLeftRulerHover = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const y = Math.round((e.clientY - rect.top) / zoom);
+    setGuidePreview({ type: "h", pos: y });
+  }, [zoom]);
+
+  const handleRightRulerHover = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const y = Math.round((e.clientY - rect.top) / zoom);
+    setGuidePreview({ type: "h", pos: y });
+  }, [zoom]);
+
+  const handleRulerLeave = useCallback(() => {
+    setGuidePreview(null);
+  }, []);
 
   // ─── Workspace Inner Rendering ─────────────────────────────────
   const renderWorkspaceInner = () => {
@@ -1840,22 +1229,122 @@ export default function RulerTool() {
   // ─── Toolbar (shared control layouts) ─────────────────────────
   const renderToolbar = (inFullscreen: boolean) => (
     <div className="flex items-center gap-2 flex-wrap">
-      {/* Mode Selector */}
-      <div className="relative">
-        <label htmlFor="measurement-mode" className="sr-only">Measurement Mode</label>
-        <select
-          id="measurement-mode"
-          value={measurementMode}
-          onChange={(e) => setMeasurementMode(e.target.value as any)}
-          className="btn-glass border border-border-light rounded-lg px-2 py-1.5 text-xs font-semibold bg-slate-950/80 text-muted-light hover:text-foreground cursor-pointer focus:outline-none"
-        >
-          <option value="free">📏 Free Drag</option>
-          <option value="left">👈 From Left</option>
-          <option value="right">👉 From Right</option>
-          <option value="top">👆 From Top</option>
-          <option value="bottom">👇 From Bottom</option>
-          <option value="box">📦 2D Box (W x H)</option>
-        </select>
+      {/* Mode Selector / Toggles */}
+      <div className="flex items-center gap-1 bg-surface-light border border-border-light rounded-xl p-1 shrink-0 shadow-sm">
+        {/* Rulers Group */}
+        <div className="flex items-center gap-0.5">
+          <button
+            onClick={() => setShowLeftRuler(v => !v)}
+            className={`p-1.5 rounded-lg transition-all cursor-pointer ${showLeftRuler
+              ? "bg-surface text-foreground font-semibold shadow-sm border border-border-light/20"
+              : "text-muted hover:text-foreground hover:bg-white/[0.04]"
+              }`}
+            title="Toggle Left Ruler (Vertical)"
+            aria-label="Toggle Left Ruler (Vertical)"
+          >
+            {/* Left Vertical Ruler Icon */}
+            <svg viewBox="0 0 24 24" className="w-4 h-4" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="8" y="2" width="8" height="20" rx="1.5" />
+              <line x1="8" y1="6" x2="11" y2="6" />
+              <line x1="8" y1="10" x2="13" y2="10" />
+              <line x1="8" y1="14" x2="11" y2="14" />
+              <line x1="8" y1="18" x2="12" y2="18" />
+            </svg>
+          </button>
+          <button
+            onClick={() => setShowRightRuler(v => !v)}
+            className={`p-1.5 rounded-lg transition-all cursor-pointer ${showRightRuler
+              ? "bg-surface text-foreground font-semibold shadow-sm border border-border-light/20"
+              : "text-muted hover:text-foreground hover:bg-white/[0.04]"
+              }`}
+            title="Toggle Right Ruler (Vertical)"
+            aria-label="Toggle Right Ruler (Vertical)"
+          >
+            {/* Right Vertical Ruler Icon */}
+            <svg viewBox="0 0 24 24" className="w-4 h-4" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="8" y="2" width="8" height="20" rx="1.5" />
+              <line x1="16" y1="6" x2="13" y2="6" />
+              <line x1="16" y1="10" x2="11" y2="10" />
+              <line x1="16" y1="14" x2="13" y2="14" />
+              <line x1="16" y1="18" x2="12" y2="18" />
+            </svg>
+          </button>
+          <button
+            onClick={() => setShowTopRuler(v => !v)}
+            className={`p-1.5 rounded-lg transition-all cursor-pointer ${showTopRuler
+              ? "bg-surface text-foreground font-semibold shadow-sm border border-border-light/20"
+              : "text-muted hover:text-foreground hover:bg-white/[0.04]"
+              }`}
+            title="Toggle Top Ruler (Horizontal)"
+            aria-label="Toggle Top Ruler (Horizontal)"
+          >
+            {/* Top Horizontal Ruler Icon */}
+            <svg viewBox="0 0 24 24" className="w-4 h-4" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="2" y="8" width="20" height="8" rx="1.5" />
+              <line x1="6" y1="8" x2="6" y2="11" />
+              <line x1="10" y1="8" x2="10" y2="13" />
+              <line x1="14" y1="8" x2="14" y2="11" />
+              <line x1="18" y1="8" x2="18" y2="12" />
+            </svg>
+          </button>
+          <button
+            onClick={() => setShowBottomRuler(v => !v)}
+            className={`p-1.5 rounded-lg transition-all cursor-pointer ${showBottomRuler
+              ? "bg-surface text-foreground font-semibold shadow-sm border border-border-light/20"
+              : "text-muted hover:text-foreground hover:bg-white/[0.04]"
+              }`}
+            title="Toggle Bottom Ruler (Horizontal)"
+            aria-label="Toggle Bottom Ruler (Horizontal)"
+          >
+            {/* Bottom Horizontal Ruler Icon */}
+            <svg viewBox="0 0 24 24" className="w-4 h-4" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="2" y="8" width="20" height="8" rx="1.5" />
+              <line x1="6" y1="16" x2="6" y2="13" />
+              <line x1="10" y1="16" x2="10" y2="11" />
+              <line x1="14" y1="16" x2="14" y2="13" />
+              <line x1="18" y1="16" x2="18" y2="12" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Divider */}
+        <div className="w-px h-5 bg-border-light mx-0.5" />
+
+        {/* Cursors & Mouse Tools Group */}
+        <div className="flex items-center gap-0.5">
+          <button
+            onClick={() => setShowCrosshair(v => !v)}
+            className={`p-1.5 rounded-lg transition-all cursor-pointer ${showCrosshair
+              ? "bg-surface text-foreground font-semibold shadow-sm border border-border-light/20"
+              : "text-muted hover:text-foreground hover:bg-white/[0.04]"
+              }`}
+            title="Toggle Cursor Crosshairs"
+            aria-label="Toggle Cursor Crosshairs"
+          >
+            {/* Dashed Crosshair */}
+            <svg viewBox="0 0 24 24" className="w-4 h-4" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="12" y1="3" x2="12" y2="21" strokeDasharray="3 3" />
+              <line x1="3" y1="12" x2="21" y2="12" strokeDasharray="3 3" />
+              <circle cx="12" cy="12" r="1.5" fill="currentColor" />
+            </svg>
+          </button>
+          <button
+            onClick={() => setShowCoordinates(v => !v)}
+            className={`p-1.5 rounded-lg transition-all cursor-pointer ${showCoordinates
+              ? "bg-surface text-foreground font-semibold shadow-sm border border-border-light/20"
+              : "text-muted hover:text-foreground hover:bg-white/[0.04]"
+              }`}
+            title="Toggle Mouse Coordinates"
+            aria-label="Toggle Mouse Coordinates"
+          >
+            {/* Target Circle */}
+            <svg viewBox="0 0 24 24" className="w-4 h-4" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="5" />
+              <line x1="12" y1="2" x2="12" y2="22" />
+              <line x1="2" y1="12" x2="22" y2="12" />
+            </svg>
+          </button>
+        </div>
       </div>
 
       {/* Calibrate */}
@@ -2139,51 +1628,155 @@ export default function RulerTool() {
                 }}
               >
                 {/* Top Row: Corner Square + Top Ruler */}
-                <div className="flex shrink-0 border-b border-border/30 bg-background/50 h-[65px] overflow-hidden">
-                  {/* Corner square */}
-                  <div
-                    className="shrink-0 bg-surface/40 border-r border-border/30 flex items-center justify-center"
-                    style={{ width: RULER_THICKNESS, height: RULER_THICKNESS }}
-                  >
-                    <span className="text-[9px] text-muted font-mono">
-                      {UNITS[unit].shortLabel}
-                    </span>
+                {showTopRuler && (
+                  <div className="flex shrink-0 border-b border-border/30 bg-background/50 h-[65px] overflow-hidden">
+                    {/* Corner square */}
+                    {showLeftRuler && (
+                      <div
+                        className="shrink-0 bg-surface/40 border-r border-border/30 flex items-center justify-center"
+                        style={{ width: RULER_THICKNESS, height: RULER_THICKNESS }}
+                      >
+                        <span className="text-[9px] text-muted font-mono">
+                          {UNITS[unit].shortLabel}
+                        </span>
+                      </div>
+                    )}
+                    {/* Top ruler */}
+                    <div className="overflow-hidden flex-1 min-w-0 cursor-crosshair" onClick={handleTopRulerClick} onMouseMove={handleTopRulerHover} onMouseLeave={handleRulerLeave}>
+                      <RulerSVG
+                        lengthPx={workspaceSize.w}
+                        ppi={ppi * zoom}
+                        unit={unit}
+                        side="top"
+                        thickness={RULER_THICKNESS}
+                        direction="normal"
+                      />
+                    </div>
+                    {/* Right corner square */}
+                    {showRightRuler && (
+                      <div
+                        className="shrink-0 bg-surface/40 border-l border-border/30"
+                        style={{ width: RULER_THICKNESS, height: RULER_THICKNESS }}
+                      />
+                    )}
                   </div>
-                  {/* Top ruler */}
-                  <div className="overflow-hidden flex-1 min-w-0">
-                    <RulerSVG
-                      lengthPx={workspaceSize.w}
-                      ppi={ppi * zoom}
-                      unit={unit}
-                      side="top"
-                      thickness={RULER_THICKNESS}
-                      direction={measurementMode === "right" ? "reverse" : "normal"}
-                    />
-                  </div>
-                </div>
+                )}
 
-                {/* Middle Row: Left Ruler + Workspace */}
+                {/* Middle Row: Left Ruler + Workspace + Right Ruler */}
                 <div className="flex flex-1 overflow-hidden">
                   {/* Left ruler */}
-                  <div className="shrink-0 bg-background/50 border-r border-border/30 overflow-hidden min-h-0">
-                    <RulerSVG
-                      lengthPx={workspaceSize.h}
-                      ppi={ppi * zoom}
-                      unit={unit}
-                      side="left"
-                      thickness={RULER_THICKNESS}
-                      direction={measurementMode === "bottom" ? "reverse" : "normal"}
-                    />
-                  </div>
+                  {showLeftRuler && (
+                    <div className="shrink-0 bg-background/50 border-r border-border/30 overflow-hidden min-h-0 cursor-crosshair" onClick={handleLeftRulerClick} onMouseMove={handleLeftRulerHover} onMouseLeave={handleRulerLeave}>
+                      <RulerSVG
+                        lengthPx={workspaceSize.h}
+                        ppi={ppi * zoom}
+                        unit={unit}
+                        side="left"
+                        thickness={RULER_THICKNESS}
+                        direction="normal"
+                      />
+                    </div>
+                  )}
 
                   {/* Workspace container */}
                   <div
                     ref={isFullscreen ? null : setWorkspaceRef}
                     className="ruler-workspace flex-1 relative bg-surface/10 min-w-0 min-h-0"
+                    onMouseMove={handleWorkspaceMouseMove}
+                    onMouseUp={handleWorkspaceMouseUp}
+                    onMouseLeave={() => { setMousePos(null); setGuidePreview(null); if (draggedGuide) setDraggedGuide(null); }}
                   >
                     {renderWorkspaceInner()}
+
+                    {/* Interactive Guidelines */}
+                    {renderGuidelines()}
+
+                    {/* Welcome Panel (show when no rulers are active) */}
+                    {!anyRulerActive && renderWelcomePanel()}
+
+                    {/* Coordinates tooltip */}
+                    {showCoordinates && mousePos && (
+                      <div
+                        className="absolute z-40 bg-surface/95 border border-border-light rounded-lg px-2.5 py-1 text-xs font-mono font-bold shadow-lg pointer-events-none whitespace-nowrap text-foreground"
+                        style={{
+                          left: `${mousePos.x + 15}px`,
+                          top: `${mousePos.y + 15}px`,
+                        }}
+                      >
+                        x: {pxToUnit(mousePos.x, ppi * zoom, unit).toFixed(1)} {UNITS[unit].shortLabel} y: {pxToUnit(mousePos.y, ppi * zoom, unit).toFixed(1)} {UNITS[unit].shortLabel}
+                      </div>
+                    )}
+
+                    {/* Mouse crosshair lines */}
+                    {showCrosshair && mousePos && (
+                      <>
+                        <div
+                          className="absolute bg-accent/50 pointer-events-none z-20"
+                          style={{
+                            left: `${mousePos.x}px`,
+                            top: 0,
+                            width: "1.5px",
+                            height: "100%",
+                          }}
+                        />
+                        <div
+                          className="absolute bg-accent/50 pointer-events-none z-20"
+                          style={{
+                            left: 0,
+                            top: `${mousePos.y}px`,
+                            width: "100%",
+                            height: "1.5px",
+                          }}
+                        />
+                      </>
+                    )}
                   </div>
+
+                  {/* Right ruler */}
+                  {showRightRuler && (
+                    <div className="shrink-0 bg-background/50 border-l border-border/30 overflow-hidden min-h-0 cursor-crosshair" onClick={handleRightRulerClick} onMouseMove={handleRightRulerHover} onMouseLeave={handleRulerLeave}>
+                      <RulerSVG
+                        lengthPx={workspaceSize.h}
+                        ppi={ppi * zoom}
+                        unit={unit}
+                        side="right"
+                        thickness={RULER_THICKNESS}
+                        direction="normal"
+                      />
+                    </div>
+                  )}
                 </div>
+
+                {/* Bottom Row: Corner Square + Bottom Ruler */}
+                {showBottomRuler && (
+                  <div className="flex shrink-0 border-t border-border/30 bg-background/50 h-[65px] overflow-hidden">
+                    {/* Corner square */}
+                    {showLeftRuler && (
+                      <div
+                        className="shrink-0 bg-surface/40 border-r border-border/30"
+                        style={{ width: RULER_THICKNESS, height: RULER_THICKNESS }}
+                      />
+                    )}
+                    {/* Bottom ruler */}
+                    <div className="overflow-hidden flex-1 min-w-0 cursor-crosshair" onClick={handleBottomRulerClick} onMouseMove={handleBottomRulerHover} onMouseLeave={handleRulerLeave}>
+                      <RulerSVG
+                        lengthPx={workspaceSize.w}
+                        ppi={ppi * zoom}
+                        unit={unit}
+                        side="bottom"
+                        thickness={RULER_THICKNESS}
+                        direction="normal"
+                      />
+                    </div>
+                    {/* Right corner square */}
+                    {showRightRuler && (
+                      <div
+                        className="shrink-0 bg-surface/40 border-l border-border/30"
+                        style={{ width: RULER_THICKNESS, height: RULER_THICKNESS }}
+                      />
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -2390,81 +1983,161 @@ export default function RulerTool() {
             }}
           >
             {/* Top ruler */}
-            <div className="shrink-0 overflow-hidden bg-slate-900 border-b border-border/50 flex">
-              {/* Corner square */}
-              <div
-                className="shrink-0 bg-surface/50 border-r border-border/50 flex items-center justify-center"
-                style={{ width: RULER_THICKNESS, height: RULER_THICKNESS }}
-              >
-                <span className="text-[9px] text-muted font-mono">
-                  {UNITS[unit].shortLabel}
-                </span>
+            {showTopRuler && (
+              <div className="shrink-0 overflow-hidden bg-slate-900 border-b border-border/50 flex">
+                {/* Corner square */}
+                {showLeftRuler && (
+                  <div
+                    className="shrink-0 bg-surface/50 border-r border-border/50 flex items-center justify-center"
+                    style={{ width: RULER_THICKNESS, height: RULER_THICKNESS }}
+                  >
+                    <span className="text-[9px] text-muted font-mono">
+                      {UNITS[unit].shortLabel}
+                    </span>
+                  </div>
+                )}
+                <div className="overflow-hidden flex-1 min-w-0 cursor-crosshair" onClick={handleTopRulerClick} onMouseMove={handleTopRulerHover} onMouseLeave={handleRulerLeave}>
+                  <RulerSVG
+                    lengthPx={workspaceSize.w}
+                    ppi={ppi * zoom}
+                    unit={unit}
+                    side="top"
+                    thickness={RULER_THICKNESS}
+                    direction="normal"
+                  />
+                </div>
+                {showRightRuler && (
+                  <div
+                    className="shrink-0 bg-surface/50 border-l border-border/50"
+                    style={{ width: RULER_THICKNESS, height: RULER_THICKNESS }}
+                  />
+                )}
               </div>
-              <div className="overflow-hidden flex-1 min-w-0">
-                <RulerSVG
-                  lengthPx={workspaceSize.w}
-                  ppi={ppi * zoom}
-                  unit={unit}
-                  side="top"
-                  thickness={RULER_THICKNESS}
-                  direction={measurementMode === "right" ? "reverse" : "normal"}
-                />
-              </div>
-            </div>
+            )}
 
             {/* Middle row: Left ruler + workspace + Right ruler */}
             <div className="flex flex-1 overflow-hidden">
               {/* Left ruler */}
-              <div className="shrink-0 overflow-hidden bg-slate-900 border-r border-border/50 min-h-0">
-                <RulerSVG
-                  lengthPx={workspaceSize.h}
-                  ppi={ppi * zoom}
-                  unit={unit}
-                  side="left"
-                  thickness={RULER_THICKNESS}
-                  direction={measurementMode === "bottom" ? "reverse" : "normal"}
-                />
-              </div>
+              {showLeftRuler && (
+                <div className="shrink-0 overflow-hidden bg-slate-900 border-r border-border/50 min-h-0 cursor-crosshair" onClick={handleLeftRulerClick} onMouseMove={handleLeftRulerHover} onMouseLeave={handleRulerLeave}>
+                  <RulerSVG
+                    lengthPx={workspaceSize.h}
+                    ppi={ppi * zoom}
+                    unit={unit}
+                    side="left"
+                    thickness={RULER_THICKNESS}
+                    direction="normal"
+                  />
+                </div>
+              )}
 
               {/* Main workspace */}
               <div
                 ref={isFullscreen ? setWorkspaceRef : null}
                 className="ruler-workspace flex-1 relative bg-surface/5 min-w-0 min-h-0"
+                onMouseMove={handleWorkspaceMouseMove}
+                onMouseUp={handleWorkspaceMouseUp}
+                onMouseLeave={() => { setMousePos(null); setGuidePreview(null); if (draggedGuide) setDraggedGuide(null); }}
               >
                 {isFullscreen && renderWorkspaceInner()}
+
+                {/* Interactive Guidelines */}
+                {isFullscreen && renderGuidelines()}
+
+                {/* Welcome Panel (show when no rulers are active) */}
+                {isFullscreen && !anyRulerActive && renderWelcomePanel()}
+
+                {/* Mouse coordinates tooltip */}
+                {isFullscreen && showCoordinates && mousePos && (
+                  <div
+                    className="absolute z-40 bg-surface/95 border border-border-light rounded-lg px-2.5 py-1 text-xs font-mono font-bold shadow-lg pointer-events-none whitespace-nowrap text-foreground"
+                    style={{
+                      left: `${mousePos.x + 15}px`,
+                      top: `${mousePos.y + 15}px`,
+                    }}
+                  >
+                    x: {pxToUnit(mousePos.x, ppi * zoom, unit).toFixed(1)} {UNITS[unit].shortLabel} y: {pxToUnit(mousePos.y, ppi * zoom, unit).toFixed(1)} {UNITS[unit].shortLabel}
+                  </div>
+                )}
+                
+                {/* Mouse crosshair lines */}
+                {isFullscreen && showCrosshair && mousePos && (
+                  <>
+                    <div
+                      className="absolute bg-accent/50 pointer-events-none z-20"
+                      style={{
+                        left: `${mousePos.x}px`,
+                        top: 0,
+                        width: "1.5px",
+                        height: "100%",
+                      }}
+                    />
+                    <div
+                      className="absolute bg-accent/50 pointer-events-none z-20"
+                      style={{
+                        left: 0,
+                        top: `${mousePos.y}px`,
+                        width: "100%",
+                        height: "1.5px",
+                      }}
+                    />
+                  </>
+                )}
               </div>
 
               {/* Right ruler */}
-              <div className="shrink-0 overflow-hidden bg-slate-900 border-l border-border/50 min-h-0">
-                <RulerSVG
-                  lengthPx={workspaceSize.h}
-                  ppi={ppi * zoom}
-                  unit={unit}
-                  side="right"
-                  thickness={RULER_THICKNESS}
-                  direction={measurementMode === "bottom" ? "reverse" : "normal"}
-                />
-              </div>
+              {showRightRuler && (
+                <div className="shrink-0 overflow-hidden bg-slate-900 border-l border-border/50 min-h-0 cursor-crosshair" onClick={handleRightRulerClick} onMouseMove={handleRightRulerHover} onMouseLeave={handleRulerLeave}>
+                  <RulerSVG
+                    lengthPx={workspaceSize.h}
+                    ppi={ppi * zoom}
+                    unit={unit}
+                    side="right"
+                    thickness={RULER_THICKNESS}
+                    direction="normal"
+                  />
+                </div>
+              )}
             </div>
 
             {/* Bottom ruler */}
-            <div className="shrink-0 overflow-hidden bg-slate-900 border-t border-border/50 flex">
-              {/* Corner square */}
-              <div
-                className="shrink-0 bg-surface/50 border-r border-border/50"
-                style={{ width: RULER_THICKNESS, height: RULER_THICKNESS }}
-              />
-              <div className="overflow-hidden flex-1 min-w-0">
-                <RulerSVG
-                  lengthPx={workspaceSize.w}
-                  ppi={ppi * zoom}
-                  unit={unit}
-                  side="bottom"
-                  thickness={RULER_THICKNESS}
-                  direction={measurementMode === "right" ? "reverse" : "normal"}
-                />
+            {showBottomRuler && (
+              <div className="shrink-0 overflow-hidden bg-slate-900 border-t border-border/50 flex">
+                {/* Corner square */}
+                {showLeftRuler && (
+                  <div
+                    className="shrink-0 bg-surface/50 border-r border-border/50"
+                    style={{ width: RULER_THICKNESS, height: RULER_THICKNESS }}
+                  />
+                )}
+                <div className="overflow-hidden flex-1 min-w-0 cursor-crosshair" onClick={handleBottomRulerClick} onMouseMove={handleBottomRulerHover} onMouseLeave={handleRulerLeave}>
+                  <RulerSVG
+                    lengthPx={workspaceSize.w}
+                    ppi={ppi * zoom}
+                    unit={unit}
+                    side="bottom"
+                    thickness={RULER_THICKNESS}
+                    direction="normal"
+                  />
+                </div>
+                {showRightRuler && (
+                  <div
+                    className="shrink-0 bg-surface/50 border-l border-border/50"
+                    style={{ width: RULER_THICKNESS, height: RULER_THICKNESS }}
+                  />
+                )}
               </div>
-            </div>
+            )}
+            
+            {/* Fullscreen view calibrator modal */}
+            {isFullscreen && (
+              <CalibratorModal
+                isOpen={showCalibrator}
+                onClose={() => setShowCalibrator(false)}
+                ppi={ppi}
+                onPpiChange={handlePpiChange}
+              />
+            )}
           </div>
         </div>
       </div>
@@ -2587,12 +2260,14 @@ export default function RulerTool() {
       </footer>
 
       {/* ─── Modals ─────────────────────────────────────── */}
-      <CalibratorModal
-        isOpen={showCalibrator}
-        onClose={() => setShowCalibrator(false)}
-        ppi={ppi}
-        onPpiChange={handlePpiChange}
-      />
+      {!isFullscreen && (
+        <CalibratorModal
+          isOpen={showCalibrator}
+          onClose={() => setShowCalibrator(false)}
+          ppi={ppi}
+          onPpiChange={handlePpiChange}
+        />
+      )}
     </>
   );
 }

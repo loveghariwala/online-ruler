@@ -172,6 +172,16 @@ body {
   transform: translateY(-50%);
 }
 
+.cursor-line.horizontal::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -15px;
+  height: 30px;
+  background: transparent;
+}
+
 .cursor-line.horizontal:hover,
 .cursor-line.horizontal:active {
   box-shadow: 0 0 14px var(--accent-secondary);
@@ -185,6 +195,16 @@ body {
   transform: translateX(-50%);
 }
 
+.cursor-line.vertical::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -15px;
+  width: 30px;
+  background: transparent;
+}
+
 .cursor-line.vertical:hover,
 .cursor-line.vertical:active {
   box-shadow: 0 0 14px var(--accent);
@@ -193,8 +213,8 @@ body {
 /* Drag handle dots */
 .drag-handle {
   position: absolute;
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   border-radius: 9999px;
   display: flex;
   align-items: center;
@@ -202,6 +222,30 @@ body {
   z-index: 25;
   cursor: grab;
   transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.2s ease;
+}
+
+/* Expand touch zone */
+.drag-handle::after {
+  content: '';
+  position: absolute;
+  top: -12px;
+  left: -12px;
+  right: -12px;
+  bottom: -12px;
+  background: transparent;
+}
+
+@media (pointer: coarse) {
+  .drag-handle {
+    width: 30px;
+    height: 30px;
+  }
+  .drag-handle::after {
+    top: -15px;
+    left: -15px;
+    right: -15px;
+    bottom: -15px;
+  }
 }
 
 .drag-handle:active {
@@ -244,14 +288,13 @@ body {
 }
 
 @keyframes pulseGlow {
-
   0%,
   100% {
-    box-shadow: 0 0 10px var(--accent-glow);
+    box-shadow: 0 0 5px var(--accent-glow);
   }
 
   50% {
-    box-shadow: 0 0 20px var(--accent);
+    box-shadow: 0 0 12px var(--accent-glow);
   }
 }
 
@@ -331,8 +374,8 @@ body {
 .calibrator-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 22px;
-  height: 22px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   background: var(--accent);
   border: 2px solid var(--surface);
@@ -347,13 +390,24 @@ body {
 }
 
 .calibrator-slider::-moz-range-thumb {
-  width: 22px;
-  height: 22px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   background: var(--accent);
   border: 2px solid var(--surface);
   box-shadow: 0 0 8px var(--accent-glow);
   cursor: grab;
+}
+
+@media (pointer: coarse) {
+  .calibrator-slider::-webkit-slider-thumb {
+    width: 32px;
+    height: 32px;
+  }
+  .calibrator-slider::-moz-range-thumb {
+    width: 32px;
+    height: 32px;
+  }
 }
 
 /* FAQ Accordion */
